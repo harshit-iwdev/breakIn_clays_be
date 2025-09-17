@@ -1,0 +1,15 @@
+module.exports.authController = require('./auth.controller');
+module.exports.eventController = require('./event.controller');
+module.exports.userController = require('./user.controller');
+module.exports.categoryController = require('./category.controller');
+module.exports.gunDetailController = require('./gunDetail.controller');
+module.exports.sponsorController = require('./sponsor.controller');
+module.exports.marketPlaceController = require('./marketPlace.controller');
+module.exports.queryController = require('./query.controller');
+module.exports.affiliateController = require('./affiliate.controller');
+module.exports.appUserController = require('./appUser.controller');
+module.exports.patchController = require('./patch.controller');
+module.exports.adminNotificationController = require('./adminNotification.controller');
+module.exports.dashboardController = require('./dashboard.controller');
+module.exports.videoController = require('./video.controller');
+module.exports.gunRequestController = require('./gunRequest.controller');

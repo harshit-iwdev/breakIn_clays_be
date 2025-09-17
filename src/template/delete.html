@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Mail</title>
+  <style>
+    *{
+      margin: 0px;
+      padding: 0px;
+    }
+    p,span{
+      color:#ffffff;
+    }
+  </style>
+</head>
+
+<body style="margin: 0px">
+  <center>
+    <div
+      style="background-image: url('https://breakin-clays-dev.s3.us-east-1.amazonaws.com/public/bg.png'); width: 720px; padding-bottom: 42px;">
+      <center>
+        <img style="width: 200px; margin-top: 40px; margin-bottom: 40px"
+          src="https://breakin-clays-dev.s3.us-east-1.amazonaws.com/public/breakin_logo.png" alt="Logo" />
+
+        <div style="
+              background-color: #161616;
+              padding: 28px;
+              width: 630px;
+              border-radius: 10px;
+              text-align: start;
+              color: #ffffff;
+            ">
+          <h1 style="color: #ffffff; font-size: 24px; text-align: center; margin-bottom: 30px;">
+            Confirm Your Account Deletion Request
+          </h1>
+
+          <p style="line-height: 1.4rem;">Hi <b>{{user}}</b>,</p>
+          
+          <p style="line-height: 1.4rem; ">
+            We received a request to delete your account associated with Breakin Clays. To proceed with the deletion, please use the pass code below for confirmation
+          </p>
+          
+          <br /> <p style="color: #b82538;text-align:center;font-size:2rem;font-weight:bold;letter-spacing:10px; margin-top: 20px; margin-bottom: 20px">{{otp}}</span>
+            
+          <!-- <p>
+              <b><a target="_blank" href="http://link-to-app/reset-password?token" style="text-decoration: none;"><span style="color: #B82538;">[Confirm Account Deletion]</span></a></b>
+          </p> -->
+          <p style="line-height: 1.4rem; margin-top: 20px;" >
+            If you did not request this, please ignore this email. Your account will remain active.
+            For any assistance, contact our support team.
+          </p>
+            <br/>
+          <p style="line-height: 1.4rem;">Happy
+            Shooting, <br>The Breakin’ Clay Team</p>
+            <center>
+              <table style="margin-top:60px; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 0 10px;">
+                    <a href="#googleLink">
+                      <img
+                        src="https://breakin-clays-dev.s3.us-east-1.amazonaws.com/public/flat-color-icons_google.png" />
+                    </a>
+                  </td>
+                  <td>
+                    <a href="#appleLink"><img
+                        src="https://breakin-clays-dev.s3.us-east-1.amazonaws.com/public/ic_twotone-apple.png" /></a>
+                  </td>
+                </tr>
+              </table>
+            </center>
+        </div>
+        <div style="margin-top: 20px;">
+          <span style="color: #ffffff; font-size: 12px; ">© Copyright 2025 <b>Breakin’ Clays.</b></span>
+        </div>
+      </center>
+    </div>
+  </center>
+</body>
+
+</html>

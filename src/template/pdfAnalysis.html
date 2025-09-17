@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analysis Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      color: #C80034;
+    }
+    .chart-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      /* background-color: #222; */
+    }
+    .legend {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .legend span {
+      display: inline-block;
+      margin: 0 10px;
+    }
+    .legend .red-dot::before {
+      content: "\2022";
+      color: #C80034;
+      font-size: 20px;
+      margin-right: 5px;
+    }
+    .legend .gray-dot::before {
+      content: "\2022";
+      color: #999;
+      font-size: 20px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div style="display: flex; align-items: center;">
+    <img src="https://breakin-clays-dev.s3.us-east-1.amazonaws.com/public/Frame.png" style="height: 70px; width: 70px; object-fit: contain; padding: 10px 10px 10px 0px;">
+    <h1>Analysis <span style="color: white;">Report</span></h1>
+  </div>
+  
+  <h2>__CATEGORY__</h2>
+  <p>Dive into the details! This report highlights patterns, strengths, and areas for improvement from your recent sessions.</p>
+
+  <div class="chart-container">
+    <canvas id="pieChart" width="250" height="250"></canvas>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 22px; font-weight: 600; font-size: large;">Top Score</div>
+  
+  <table id="topEventLengthTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="roundsTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="top5Table">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="postsTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  
+  <div class="chart-container" style="padding-top: 40px;">
+    <canvas id="barChart" width="400" height="300"></canvas>
+  </div>
+  
+  <div style="text-align: center; margin-bottom: 22px; font-weight: 600; font-size: large;">Average Score</div>
+  
+
+  <table id="avgEventLengthTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  
+  <table id="avgRoundsTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="averageHitTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="averagePostsTable">
+    <thead>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <div style="text-align: center; margin-bottom: 22px; font-weight: 600; font-size: large;">Firearm</div>
+
+  <table id="topPercentByFirearmTable">
+    <thead>
+      <tr style="max-width: 100%;">
+        <th style="color: #C80034; width: 100%;" colspan="2">Top Hit % by Firearm</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <table id="averagePercentByFirearmTable">
+    <thead>
+      <tr style="max-width: 100%;">
+        <th style="color: #C80034; width: 100%;" colspan="2">Average Hit % by Firearm</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    const data1 = __TARGET_HIT__;
+    const data2 = __TARGET_MISSED__;
+    const dataHighest = __HIGHEST__;
+    const dataAverage = __AVERAGE__;
+    const chartRoundName = "__ROUND_NAME__";
+    const isBarStation = __IS_BAR_VALUE__;
+
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Target Hit', 'Target Missed'],
+        datasets: [{
+          data: [data2, data1],
+          backgroundColor: ['#C80034', '#2E2E2E']
+        }]
+      },
+      options: {
+      responsive: false,
+      maintainAspectRatio: false,
+      animation: false,
+      layout: {
+        padding: 0,
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+              color: '#fff',
+            }
+        },
+        datalabels: {
+          color: '#fff',
+          formatter: (value, ctx) => {
+            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            let percentage = (value * 100 / sum).toFixed(0) + '%';
+            return percentage;
+          },
+          font: {
+            size: 16,
+            weight: 'bold'
+          }
+        },
+       
+      }
+    },
+    plugins: [ChartDataLabels]
+});
+
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: [''],
+        datasets: [
+          {
+            label: isBarStation?"Event Average":`Highest Score/${chartRoundName}`,
+            data: [dataHighest],
+            backgroundColor: '#C80034',
+            categoryPercentage: 0.3, // adjust for more/less gap between group
+          },
+          {
+            label: isBarStation?"Station Average":`Average Score/${chartRoundName}`,
+            data: [dataAverage],
+            backgroundColor: '#555',
+            // barThickness: 20
+            categoryPercentage: 0.3, // adjust for more/less gap between group
+            // barPercentage: 0.6
+          }
+        ]
+      },
+      options: {
+        responsive: false,
+        animation: false,
+        plugins: {
+          datalabels: {
+            anchor: 'top',
+            align: 'end',
+            color: '#FFFFFF',
+            font: {
+              weight: 'bold',
+              size: 14
+            },
+            formatter: value => value.toFixed(1)
+          },
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#fff'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#fff'
+            }
+          },
+          y: {
+            ticks: {
+              color: '#fff'
+            },
+            beginAtZero: true
+          }
+        }
+      },
+    plugins: [ChartDataLabels]
+    });
+
+  </script>
+  <script>
+    const highestRoundScoresByRound = __TOP_SCORE_ROUND__;
+  const isHighHide = highestRoundScoresByRound[0].isHide;
+  const topRoundName = highestRoundScoresByRound[0].roundName;
+
+  const topRoundTableHead = document.querySelector("#roundsTable thead");
+
+  const topRoundRow = document.createElement("tr");
+  topRoundRow.style.maxWidth = "100%";
+
+  const topRoundHeadCell = document.createElement("th");
+  topRoundHeadCell.textContent =  `Top Score by ${topRoundName}`;
+  topRoundHeadCell.style.color = "#C80034";
+  topRoundHeadCell.style.width = "100%";
+  topRoundHeadCell.colSpan = 2;
+
+  topRoundRow.appendChild(topRoundHeadCell);
+  topRoundTableHead.appendChild(topRoundRow);
+  
+  const highestRoundTable = document.querySelector("#roundsTable");
+
+  if (isHighHide === true) {
+    highestRoundTable.style.display = "none";
+  }
+  
+    const tableBody = document.querySelector("#roundsTable tbody");
+  
+    highestRoundScoresByRound.forEach(({ roundNo, highestScore, scoreDate }) => {
+      const row = document.createElement("tr");
+  
+      const roundCell = document.createElement("td");
+      roundCell.style.width = "50%";
+      roundCell.textContent = `${String(roundNo)}`;
+  
+      const scoreCell = document.createElement("td");
+      scoreCell.style.width = "50%";
+      scoreCell.textContent = `${highestScore}`;
+  
+      row.appendChild(roundCell);
+      row.appendChild(scoreCell);
+      tableBody.appendChild(row);
+    });
+  </script>
+
+<script>
+    const top5Score = __TOP_5__;
+  const isTop5Hide = top5Score[0].isHide;
+  
+  const top5Table = document.querySelector("#top5Table");
+
+  if (isTop5Hide === true) {
+    top5Table.style.display = "none";
+  }
+  
+    const top5TableBody = document.querySelector("#top5Table tbody");
+
+    const top5TableHead = document.querySelector("#top5Table thead");
+
+    const rowTop5 = document.createElement("tr");
+    rowTop5.style.maxWidth = "100%";
+
+    const top5HeadCell = document.createElement("th");
+    top5HeadCell.textContent = "Top 5 Event Socre by Hit %";
+    top5HeadCell.style.color = "#C80034";
+    top5HeadCell.style.width = "100%";
+    top5HeadCell.colSpan = 2;
+
+    rowTop5.appendChild(top5HeadCell);
+    top5TableHead.appendChild(rowTop5);
+  
+    top5Score.forEach(({ scoreNo, scorePercentage }) => {
+      const row = document.createElement("tr");
+  
+      const roundCell = document.createElement("td");
+      roundCell.style.width = "50%";
+      roundCell.textContent = `${String(scoreNo) }`;
+  
+      const scoreCell = document.createElement("td");
+      scoreCell.style.width = "50%";
+      scoreCell.textContent = `${scorePercentage} %`;
+  
+      row.appendChild(roundCell);
+      row.appendChild(scoreCell);
+      top5TableBody.appendChild(row);
+    });
+</script>
+
+<script>
+    const topEventScore = __TOP_EVENT__;
+  const isTopEventHide = topEventScore[0].isHide;
+  
+  const topEventTable = document.querySelector("#topEventLengthTable");
+
+  if (isTopEventHide === true) {
+    topEventTable.style.display = "none";
+  }
+  
+    const topEventTableBody = document.querySelector("#topEventLengthTable tbody");
+
+    const topEventTableHead = document.querySelector("#topEventLengthTable thead");
+
+    const rowTopEvent = document.createElement("tr");
+    rowTopEvent.style.maxWidth = "100%";
+
+    const topEventHeadCell = document.createElement("th");
+    topEventHeadCell.textContent = "Top Score by Event Length";
+    topEventHeadCell.style.color = "#C80034";
+    topEventHeadCell.style.width = "100%";
+    topEventHeadCell.colSpan = 2;
+
+    rowTopEvent.appendChild(topEventHeadCell);
+    topEventTableHead.appendChild(rowTopEvent);
+  
+    topEventScore.forEach(({ roundNo, highestScore, roundName }) => {
+      const row = document.createElement("tr");
+      let roundCount = roundNo==1?roundName: roundName+"s";
+      const roundCell = document.createElement("td");
+      roundCell.style.width = "50%";
+      roundCell.textContent = `${String(roundNo) } ${roundCount}`;
+  
+      const scoreCell = document.createElement("td");
+      scoreCell.style.width = "50%";
+      scoreCell.textContent = `${highestScore}`;
+  
+      row.appendChild(roundCell);
+      row.appendChild(scoreCell);
+      topEventTableBody.appendChild(row);
+    });
+</script>
+
+<script>
+    const avgEventScore = __AVG_EVENT__;
+  const isAvgEventHide = avgEventScore[0].isHide;
+  
+  const avgEventTable = document.querySelector("#avgEventLengthTable");
+
+  if (isAvgEventHide === true) {
+    avgEventTable.style.display = "none";
+  }
+  
+    const avgEventTableBody = document.querySelector("#avgEventLengthTable tbody");
+
+    const avgEventTableHead = document.querySelector("#avgEventLengthTable thead");
+
+    const rowAvgEvent = document.createElement("tr");
+    rowAvgEvent.style.maxWidth = "100%";
+
+    const avgEventHeadCell = document.createElement("th");
+    avgEventHeadCell.textContent = "Average Score by Event Length";
+    avgEventHeadCell.style.color = "#C80034";
+    avgEventHeadCell.style.width = "100%";
+    avgEventHeadCell.colSpan = 2;
+
+    rowAvgEvent.appendChild(avgEventHeadCell);
+    avgEventTableHead.appendChild(rowAvgEvent);
+  
+    avgEventScore.forEach(({ roundNo, averageScore,roundName }) => {
+      const row = document.createElement("tr");
+      let roundCount = roundNo==1?roundName: roundName+"s";
+      const roundCell = document.createElement("td");
+      roundCell.style.width = "50%";
+      roundCell.textContent = `${String(roundNo) } ${roundCount}`;
+  
+      const scoreCell = document.createElement("td");
+      scoreCell.style.width = "50%";
+      scoreCell.textContent = `${averageScore}`;
+  
+      row.appendChild(roundCell);
+      row.appendChild(scoreCell);
+      avgEventTableBody.appendChild(row);
+    });
+</script>
+
+<script>
+  const highestPostScoresByPost = __TOP_SCORE_POST__;
+  const isStationHigh = highestPostScoresByPost[0].isStation;
+  const topPostName = highestPostScoresByPost[0].postName;
+
+  const highestPostTableHead = document.querySelector("#postsTable thead");
+
+  const rowHighest = document.createElement("tr");
+  rowHighest.style.maxWidth = "100%";
+
+  const highHeadCell = document.createElement("th");
+  highHeadCell.textContent = isStationHigh ? "Top Hit % by Station" : `Top Score By ${topPostName}`;
+  highHeadCell.style.color = "#C80034";
+  highHeadCell.style.width = "100%";
+  highHeadCell.colSpan = 2;
+
+  rowHighest.appendChild(highHeadCell);
+  highestPostTableHead.appendChild(rowHighest);
+
+  const postTableBody = document.querySelector("#postsTable tbody");
+
+  highestPostScoresByPost.forEach(({ post, highestScore }) => {
+    const row = document.createElement("tr");
+
+    const postCell = document.createElement("td");
+    postCell.style.width = "50%";
+    postCell.textContent = String(post) ;
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "50%";
+    scoreCell.textContent = `${highestScore}`;
+
+    row.appendChild(postCell);
+    row.appendChild(scoreCell);
+    postTableBody.appendChild(row);
+  });
+</script>
+
+<script>
+  const avgRoundScoresByRound = __AVG_SCORE_ROUND__;
+  const isAvgHide = avgRoundScoresByRound[0].isHide;
+  const avgRoundName = avgRoundScoresByRound[0].roundName;
+
+  const avgRoundTableHead = document.querySelector("#avgRoundsTable thead");
+
+  const avgRoundRow = document.createElement("tr");
+  avgRoundRow.style.maxWidth = "100%";
+
+  const avgRoundHeadCell = document.createElement("th");
+  avgRoundHeadCell.textContent =  `Average Score by ${avgRoundName}`;
+  avgRoundHeadCell.style.color = "#C80034";
+  avgRoundHeadCell.style.width = "100%";
+  avgRoundHeadCell.colSpan = 2;
+
+  avgRoundRow.appendChild(avgRoundHeadCell);
+  avgRoundTableHead.appendChild(avgRoundRow);
+  
+  const averageRoundTableBody = document.querySelector("#avgRoundsTable tbody");
+
+  const averageRoundTable = document.querySelector("#avgRoundsTable");
+  if (isAvgHide === true) {
+    averageRoundTable.style.display = "none";
+  }
+
+  avgRoundScoresByRound.forEach(({ roundNo, averageScore }) => {
+    const row = document.createElement("tr");
+
+    const roundCell = document.createElement("td");
+    roundCell.style.width = "50%";
+    roundCell.textContent = `${String(roundNo) }`;
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "50%";
+    scoreCell.textContent = `${averageScore}`;
+
+    row.appendChild(roundCell);
+    row.appendChild(scoreCell);
+    averageRoundTableBody.appendChild(row);
+  });
+
+</script>
+
+<script>
+  const averageHitPercentScore = __AVG_HIT_PERCENT__;
+
+  const avgHitTable = document.querySelector("#averageHitTable");
+  if (averageHitPercentScore.isHide === true) {
+    avgHitTable.style.display = "none";
+  }
+
+ const avgHitTableHead = document.querySelector("#averageHitTable thead");
+
+  const avgHitRow = document.createElement("tr");
+  avgHitRow.style.maxWidth = "100%";
+
+  const avgHitHeadCell = document.createElement("th");
+  avgHitHeadCell.textContent =  "Average Hit %";
+  avgHitHeadCell.style.color = "#C80034";
+  avgHitHeadCell.style.width = "100%";
+  avgHitHeadCell.colSpan = 2;
+
+  avgHitRow.appendChild(avgHitHeadCell);
+  avgHitTableHead.appendChild(avgHitRow);
+
+  const averageHitTableBody = document.querySelector("#averageHitTable tbody");
+  const avgHitRow1 = document.createElement("tr");
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "100%";
+    scoreCell.textContent = `${averageHitPercentScore.score} %`;
+
+    avgHitRow1.appendChild(scoreCell);
+    averageHitTableBody.appendChild(avgHitRow1);
+
+</script>
+
+<script>
+  const averagePostScoresByPost = __AVG_SCORE_POST__;
+  const isStation = averagePostScoresByPost[0].isStation;
+  const averagePostName = averagePostScoresByPost[0].postName;
+
+ const avgPostTableHead = document.querySelector("#averagePostsTable thead");
+
+  const row = document.createElement("tr");
+  row.style.maxWidth = "100%";
+
+  const postHeadCell = document.createElement("th");
+  postHeadCell.textContent = isStation ? "Average Hit % by Station" : `Average Score By ${averagePostName}`;
+  postHeadCell.style.color = "#C80034";
+  postHeadCell.style.width = "100%";
+  postHeadCell.colSpan = 2;
+
+  row.appendChild(postHeadCell);
+  avgPostTableHead.appendChild(row);
+
+  const avgPostTableBody = document.querySelector("#averagePostsTable tbody");
+
+  averagePostScoresByPost.forEach(({ post, averageScore }) => {
+    const row = document.createElement("tr");
+
+    const postCell = document.createElement("td");
+    postCell.style.width = "50%";
+    postCell.textContent = String(post) ;
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "50%";
+    scoreCell.textContent = `${averageScore}`;
+
+    row.appendChild(postCell);
+    row.appendChild(scoreCell);
+    avgPostTableBody.appendChild(row);
+  });
+</script>
+
+
+
+<script>
+  const topPercentByFirearm = __HIGHEST_FIREARM_PERCENT__;
+
+  const topPercentByFirearmTable = document.querySelector("#topPercentByFirearmTable tbody");
+
+  topPercentByFirearm.forEach(({ name, highestScore }) => {
+    const row = document.createElement("tr");
+
+    const nameCell = document.createElement("td");
+    nameCell.style.width = "50%";
+    nameCell.textContent = `${String(name) }`;  
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "50%";
+    scoreCell.textContent = `${highestScore.toFixed(1)} %`;
+
+    row.appendChild(nameCell);
+    row.appendChild(scoreCell);
+    topPercentByFirearmTable.appendChild(row);
+  });
+</script>
+
+<script>
+  const averagePercentByFirearm = __AVERAGE_FIREARM_PERCENT__;
+
+  const averagePercentByFirearmTable = document.querySelector("#averagePercentByFirearmTable tbody");
+
+  averagePercentByFirearm.forEach(({ name, averageScore }) => {
+    const row = document.createElement("tr");
+
+    const nameCell = document.createElement("td");
+    nameCell.style.width = "50%";
+    nameCell.textContent = `${String(name) }`;
+
+    const scoreCell = document.createElement("td");
+    scoreCell.style.width = "50%";
+    scoreCell.textContent = `${averageScore.toFixed(1)} %`;
+
+    row.appendChild(nameCell);
+    row.appendChild(scoreCell);
+    averagePercentByFirearmTable.appendChild(row);
+  });
+</script>
+
+  <style>
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+    @page {
+      size: A4 portrait;
+      margin: 0mm;
+    }
+  </style>
+</body>
+</html>

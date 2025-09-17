@@ -1,0 +1,9 @@
+module.exports.authValidation = require('./auth.validation');
+module.exports.userValidation = require('./user.validation');
+module.exports.eventValidation = require('./event.validation');
+module.exports.scoreValidation = require('./score.validation');
+module.exports.categoryValidation = require('./category.validation');
+module.exports.gunSafeValidation = require('./gunSafe.validation');
+module.exports.analysisValidation = require('./analysis.validation');
+module.exports.queryValidation = require('./query.validation');
+module.exports.videoValidation = require('./video.validation');

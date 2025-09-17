@@ -1,0 +1,10 @@
+module.exports.authController = require('./auth.controller');
+module.exports.userController = require('./user.controller');
+module.exports.eventController = require('./event.controller');
+module.exports.scoreController = require('./score.controller');
+module.exports.categoryController = require('./category.controller');
+module.exports.gunSafeController = require('./gunSafe.controller');
+module.exports.analysisController = require('./analysis.controller');
+module.exports.queryController = require('./query.controller');
+module.exports.videoController = require('./video.controller');
+module.exports.sideMenuController = require('./sideMenu.controller');

@@ -1,0 +1,14 @@
+module.exports.authValidation = require('./auth.validation');
+module.exports.userValidation = require('./user.validation');
+module.exports.eventValidation = require('./event.validation');
+module.exports.categoryValidation = require('./category.validation');
+module.exports.gunDetailValidation = require('./gunDetail.validation');
+module.exports.sponsorValidation = require('./sponsor.validation');
+module.exports.marketPlaceValidation = require('./marketPlace.validation');
+module.exports.queryValidation = require('./query.validation');
+module.exports.affiliateValidation = require('./affiliate.validation');
+module.exports.appUserValidation = require('./appUser.validation');
+module.exports.patchValidation = require('./patch.validation');
+module.exports.adminNotificationValidation = require('./adminNotification.validation');
+module.exports.videoValidation = require('./video.validation');
+module.exports.gunRequestValidation = require('./gunRequest.validation');

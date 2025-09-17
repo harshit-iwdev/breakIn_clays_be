@@ -1,0 +1,13 @@
+module.exports.authService = require('./auth.service');
+module.exports.userService = require('./user.service');
+module.exports.tokenService = require('./token.service');
+module.exports.eventService = require('./event.service');
+module.exports.scoreService = require('./score.service');
+module.exports.categoryService = require('./category.service');
+module.exports.gunSafeService = require('./gunSafe.service');
+module.exports.analysisService = require('./analysis.service');
+module.exports.queryService = require('./query.service');
+module.exports.videoService = require('./video.service');
+module.exports.sideMenuService = require('./sideMenu.service');
+module.exports.userDeviceService = require('./userDevice.service');
+module.exports.appVersionService = require('./appVersion.service');
