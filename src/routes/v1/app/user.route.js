@@ -1,35 +1,73 @@
-const express = require('express');
-const auth = require('../../../middlewares/auth');
-const validate = require('../../../middlewares/validate');
-const userValidation = require('../../../validations/app/user.validation');
-const userController = require('../../../controllers/app/user.controller');
+const express = require("express");
+const auth = require("../../../middlewares/auth");
+const validate = require("../../../middlewares/validate");
+const userValidation = require("../../../validations/app/user.validation");
+const userController = require("../../../controllers/app/user.controller");
 
- const router = express.Router();
+const router = express.Router();
 
 router
-  .route('/')
-  .patch(auth(),validate(userValidation.profileImageUpdate),userController.saveProfileImage)
-  .put(auth(),validate(userValidation.updateUser),userController.updateUserById)
+  .route("/")
+  .patch(
+    auth(),
+    validate(userValidation.profileImageUpdate),
+    userController.saveProfileImage
+  )
+  .put(
+    auth(),
+    validate(userValidation.updateUser),
+    userController.updateUserById
+  )
   .delete(auth(), userController.deleteUserProfile)
-  .get(auth(),userController.getUserProfile);
+  .get(auth(), userController.getUserProfile);
 
-router.post('/change-password',auth(),validate(userValidation.changePassword),userController.changePassword)
+router.post(
+  "/change-password",
+  auth(),
+  validate(userValidation.changePassword),
+  userController.changePassword
+);
 
-router.post('/patch',auth(),validate(userValidation.listPatch),userController.listPatch)
+router.post(
+  "/patch",
+  auth(),
+  validate(userValidation.listPatch),
+  userController.listPatch
+);
 
-router.post('/notification',auth(),validate(userValidation.listNotification),userController.listNotification)
+router.post(
+  "/notification",
+  auth(),
+  validate(userValidation.listNotification),
+  userController.listNotification
+);
 
-router.patch('/read',auth(),validate(userValidation.readNotification),userController.readNotification)
+router.patch(
+  "/read",
+  auth(),
+  validate(userValidation.readNotification),
+  userController.readNotification
+);
 
-router.put('/delete-notification',auth(),validate(userValidation.deleteNotification),userController.deleteNotification)
+router.put(
+  "/delete-notification",
+  auth(),
+  validate(userValidation.deleteNotification),
+  userController.deleteNotification
+);
 
-router.post('/send-test',userController.testFirebase);
+router.post("/send-test", userController.testFirebase);
 
-router.get('/metric',auth(),userController.metricUpdate);
+router.get("/metric", auth(), userController.metricUpdate);
 
-router.patch('/premium',auth(), validate(userValidation.premiumUser), userController.premiumUpdate);
+router.patch(
+  "/premium",
+  auth(),
+  validate(userValidation.premiumUser),
+  userController.premiumUpdate
+);
 
-router.get('/push-notify',auth(), userController.notifyUpdate);
+router.get("/push-notify", auth(), userController.notifyUpdate);
 
 module.exports = router;
 

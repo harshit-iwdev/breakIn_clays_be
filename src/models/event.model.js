@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const mongoose = require("mongoose");
+const { toJSON, paginate } = require("./plugins");
+const { required } = require("joi");
 
 const eventSchema = mongoose.Schema(
   {
@@ -45,6 +46,16 @@ const eventSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isAutoDelete: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    isRecurring: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
   },
   {
     timestamps: true,
@@ -54,6 +65,6 @@ const eventSchema = mongoose.Schema(
 /**
  * @typedef Event
  */
-const Event = mongoose.model('Event', eventSchema);
+const Event = mongoose.model("Event", eventSchema);
 
 module.exports = Event;

@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { SCORE_EVENT_TYPE } = require('../config/config');
+const mongoose = require("mongoose");
+const { SCORE_EVENT_TYPE } = require("../config/config");
 
 const scoreSchema = mongoose.Schema(
   {
@@ -32,6 +32,11 @@ const scoreSchema = mongoose.Schema(
     eventId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Event",
+      required: false,
+    },
+    isEventDeleted: {
+      type: Boolean,
+      default: false,
       required: false,
     },
     gunId: {
@@ -85,6 +90,6 @@ const scoreSchema = mongoose.Schema(
 /**
  * @typedef Score
  */
-const Score = mongoose.model('Score', scoreSchema);
+const Score = mongoose.model("Score", scoreSchema);
 
 module.exports = Score;
