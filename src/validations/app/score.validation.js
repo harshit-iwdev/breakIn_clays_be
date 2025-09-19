@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const { objectId } = require("./custom.validation");
 const { SCORE_EVENT_TYPE, SHOT_TYPE } = require("../../config/config");
+const moment = require("moment");
 
 // Extend SHOT_TYPE to allow numbered variants for REPORT_PAIR and TRUE_PAIR (e.g., REPORT_PAIR_1..20)
 const EXTENDED_SHOT_TYPE = (() => {
@@ -137,6 +138,28 @@ const get = {
   }),
 };
 
+// const list = {
+//   body: Joi.object().keys({
+//     categoryId: Joi.string().required().custom(objectId),
+//     search: Joi.string().allow(""),
+//     limit: Joi.number(),
+//     page: Joi.number(),
+//     eventId: Joi.string().custom(objectId),
+//   }),
+// };
+
+const dateFormat = Joi.string()
+  .pattern(/^\d{4}\/\d{1,2}\/\d{1,2}$/, "date format (yyyy/mm/dd)")
+  .optional()
+  .custom((value, helpers) => {
+    if (!value) return undefined;
+    const parsedDate = moment(value, "YYYY/MM/DD", true);
+    if (!parsedDate.isValid()) {
+      return helpers.error("any.invalid");
+    }
+    return parsedDate.toDate();
+  });
+
 const list = {
   body: Joi.object().keys({
     categoryId: Joi.string().required().custom(objectId),
@@ -144,6 +167,14 @@ const list = {
     limit: Joi.number(),
     page: Joi.number(),
     eventId: Joi.string().custom(objectId),
+    startDate: dateFormat.optional(),
+    endDate: dateFormat.optional(),
+    eventType: Joi.string()
+      .valid(...SCORE_EVENT_TYPE)
+      .optional()
+      .messages({
+        "any.only": `Invalid event type. Allowed types are: ${SCORE_EVENT_TYPE.join(", ")}.`,
+      }),
   }),
 };
 

@@ -21,6 +21,7 @@ const {
   pdfScoreGenerator,
 } = require("../../utils/pdfUtils");
 const { pipeline } = require("nodemailer/lib/xoauth2");
+const moment = require("moment");
 
 async function assignPatch({
   categoryId,
@@ -118,6 +119,7 @@ const createScore = async (reqBody, userId) => {
     const categoryObj = await Category.findOne({ _id: categoryId }).session(
       session
     );
+    console.log("====================", eventId);
     const [scoreData] = await Score.create(
       [
         {
@@ -138,6 +140,7 @@ const createScore = async (reqBody, userId) => {
       ],
       { session }
     );
+    console.log("====================", scoreData);
 
     for (const round of rounds) {
       const { roundNo, roundShots, roundScore, posts, note } = round;
@@ -1012,8 +1015,38 @@ const getScore = async (scoreId, userId) => {
   return scoreData[0];
 };
 
+function getDateRange(startDate, endDate) {
+  let start = null;
+  let end = null;
+
+  if (startDate) {
+    start = moment(startDate).startOf("day").utc().toDate();
+  }
+
+  if (endDate) {
+    if (moment(startDate).isSame(endDate, "day")) {
+      end = moment(endDate).endOf("day").utc().toDate(); // 23:59:59.999 UTC
+    } else {
+      end = moment(endDate).endOf("day").utc().toDate();
+    }
+  }
+
+  return { start, end };
+}
+
 const listScore = async (reqBody, userId) => {
-  const { page = 1, limit = 10, categoryId, eventId, search } = reqBody;
+  console.log(reqBody, userId);
+
+  const {
+    page = 1,
+    limit = 10,
+    categoryId,
+    eventId,
+    search,
+    startDate,
+    endDate,
+    eventType,
+  } = reqBody;
 
   let filter = {
     userId: new mongoose.Types.ObjectId(userId),
@@ -1021,8 +1054,19 @@ const listScore = async (reqBody, userId) => {
     categoryId: new mongoose.Types.ObjectId(categoryId),
   };
 
+  if (startDate && endDate) {
+    const { start, end } = getDateRange(startDate, endDate);
+    filter.createdAt = {
+      ...(start && { $gte: start }),
+      ...(end && { $lte: end }),
+    };
+  }
+
   if (eventId) {
     filter.eventId = new mongoose.Types.ObjectId(eventId);
+  }
+  if (eventType) {
+    filter.eventType = eventType;
   }
 
   let pipeline = [
