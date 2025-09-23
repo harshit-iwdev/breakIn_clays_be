@@ -1,6 +1,9 @@
 const Joi = require("joi");
 const { objectId } = require("./custom.validation");
-const { NOTIFICATION_TIME } = require("../../config/config");
+const {
+  NOTIFICATION_TIME,
+  RECURRING_EVENT_TYPE,
+} = require("../../config/config");
 
 const create = {
   body: Joi.object().keys({
@@ -17,7 +20,7 @@ const create = {
     categoryId: Joi.string().required().custom(objectId),
     alertType: Joi.string().valid(...NOTIFICATION_TIME),
     isAutoDelete: Joi.boolean().default(false),
-    isRecurring: Joi.boolean().default(false),
+    recurringType: Joi.string().valid(...RECURRING_EVENT_TYPE),
   }),
 };
 

@@ -51,8 +51,9 @@ const createEvent = async (eventBody, user) => {
       latitude,
       longitude,
       isAutoDelete = false,
-      isRecurring = false,
+      recurringType,
     } = eventBody;
+    const isRecurring = recurringType == "DOES NOT REPEAT" ? false : true;
     console.log(eventBody);
     const userId = user._id;
 
@@ -69,10 +70,12 @@ const createEvent = async (eventBody, user) => {
           userId,
           isAutoDelete,
           isRecurring,
+          recurringType,
         },
       ],
       { session }
     );
+    console.log("alertType ", alertType);
     if (alertType) {
       await UserCalendar.create(
         [
@@ -457,20 +460,28 @@ const userCalendarList = async (userId) => {
 
   if (events[0].myEvents.length > 0) {
     for (event of events[0].myEvents) {
-      let dates = getDatesBetween(event.startDate, event.endDate);
+      let dates = getDatesBetweenWithRecurring(event);
       myEvents.push(...dates);
     }
   }
 
   if (events[0].adminEvents.length > 0) {
     for (event of events[0].adminEvents) {
-      let dates = getDatesBetween(event.startDate, event.endDate);
+      let dates = getDatesBetweenWithRecurring(event);
       adminEvents.push(...dates);
     }
   }
 
   myEvents = [...new Set(myEvents)];
   adminEvents = [...new Set(adminEvents)];
+
+  console.log(
+    getDatesBetweenWithRecurring({
+      startDate: "2025/10/01",
+      endDate: "2025/10/15",
+      recurringType: "WEEKLY",
+    })
+  );
 
   return {
     myEvents,
@@ -486,6 +497,49 @@ function getDatesBetween(startDate, endDate) {
   while (currentDate <= lastDate) {
     dates.push(new Date(currentDate).toISOString().split("T")[0]); // Push date in YYYY-MM-DD format
     currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+  }
+
+  return dates;
+}
+
+function getDatesBetweenWithRecurring(event) {
+  let { startDate, endDate, recurringType } = event;
+
+  recurringType =
+    !recurringType || recurringType === "DOES NOT REPEAT"
+      ? "DAILY"
+      : recurringType.toUpperCase();
+
+  const dates = [];
+  let currentDate = new Date(startDate);
+  const lastDate = new Date(endDate);
+
+  // Decide increment
+  let stepDays;
+  switch (recurringType) {
+    case "WEEKLY":
+      stepDays = 7;
+      break;
+    case "BIWEEKLY":
+      stepDays = 14;
+      break;
+    case "MONTHLY":
+      stepDays = "MONTHLY";
+      break;
+    case "DAILY":
+    default:
+      stepDays = 1;
+  }
+
+  // Always include the starting date too
+  while (currentDate <= lastDate) {
+    dates.push(new Date(currentDate).toISOString().split("T")[0]);
+
+    if (stepDays === "MONTHLY") {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    } else {
+      currentDate.setDate(currentDate.getDate() + stepDays);
+    }
   }
 
   return dates;
