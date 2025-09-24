@@ -1055,6 +1055,9 @@ const listScore = async (reqBody, userId) => {
   };
 
   if (startDate && endDate) {
+    if (startDate > endDate) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date selection!");
+    }
     const { start, end } = getDateRange(startDate, endDate);
     filter.createdAt = {
       ...(start && { $gte: start }),

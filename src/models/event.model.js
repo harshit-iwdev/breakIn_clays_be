@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { toJSON, paginate } = require("./plugins");
 const { required } = require("joi");
+const { RECURRING_EVENT_TYPE } = require("../config/config");
 
 const eventSchema = mongoose.Schema(
   {
@@ -54,6 +55,11 @@ const eventSchema = mongoose.Schema(
     isRecurring: {
       type: Boolean,
       default: false,
+      required: false,
+    },
+    recurringType: {
+      type: String,
+      enum: RECURRING_EVENT_TYPE,
       required: false,
     },
   },
