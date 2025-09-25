@@ -17,6 +17,9 @@ cron.schedule("1 8 * * *", () => {
 
 cron.schedule("0 0 * * *", async () => {
   const dataToDelete = await autoDeleteJob.getOldEvents();
-  console.log(dataToDelete);
   await autoDeleteJob.markEventsAndScoresDeleted(dataToDelete);
+  console.log(
+    "Task running for auto delete event:",
+    new Date().toLocaleString()
+  );
 });

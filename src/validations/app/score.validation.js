@@ -71,6 +71,7 @@ const add = {
     totalShots: Joi.number().integer().min(0).required(),
     gunId: Joi.string().custom(objectId).allow("", null),
     eventId: Joi.string().custom(objectId),
+    isDraft: Joi.boolean().required(),
   }),
 };
 
@@ -129,6 +130,7 @@ const edit = {
     totalShots: Joi.number().integer().min(0).required(),
     gunId: Joi.string().custom(objectId).allow("", null),
     eventId: Joi.string().custom(objectId),
+    isDraft: Joi.boolean().required(),
   }),
 };
 

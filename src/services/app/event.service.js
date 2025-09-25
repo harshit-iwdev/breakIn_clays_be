@@ -54,7 +54,7 @@ const createEvent = async (eventBody, user) => {
       recurringType,
     } = eventBody;
     const isRecurring = recurringType == "DOES NOT REPEAT" ? false : true;
-    console.log(eventBody);
+
     const userId = user._id;
 
     const event = await Event.create(
@@ -474,14 +474,6 @@ const userCalendarList = async (userId) => {
 
   myEvents = [...new Set(myEvents)];
   adminEvents = [...new Set(adminEvents)];
-
-  console.log(
-    getDatesBetweenWithRecurring({
-      startDate: "2025/10/01",
-      endDate: "2025/10/15",
-      recurringType: "WEEKLY",
-    })
-  );
 
   return {
     myEvents,

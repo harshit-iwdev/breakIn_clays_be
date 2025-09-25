@@ -81,6 +81,10 @@ const scoreSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+    isDraft: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
