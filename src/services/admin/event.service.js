@@ -30,8 +30,6 @@ const createEvent = async (eventBody, user) => {
     } = eventBody;
     const userId = user._id;
 
-    console.log("payload in create event ", eventBody);
-
     const [event] = await Event.create(
       [
         {

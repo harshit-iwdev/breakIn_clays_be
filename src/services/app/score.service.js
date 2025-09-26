@@ -104,6 +104,7 @@ const createScore = async (reqBody, userId) => {
     totalScore,
     totalShots,
     eventId,
+    isDraft,
   } = reqBody;
 
   let roundIds = [];
@@ -119,7 +120,6 @@ const createScore = async (reqBody, userId) => {
     const categoryObj = await Category.findOne({ _id: categoryId }).session(
       session
     );
-    console.log("====================", eventId);
     const [scoreData] = await Score.create(
       [
         {
@@ -136,11 +136,11 @@ const createScore = async (reqBody, userId) => {
           totalScore,
           totalShots,
           eventId,
+          isDraft,
         },
       ],
       { session }
     );
-    console.log("====================", scoreData);
 
     for (const round of rounds) {
       const { roundNo, roundShots, roundScore, posts, note } = round;
@@ -219,7 +219,7 @@ const createScore = async (reqBody, userId) => {
         let counter = 0;
         for (roundObj of roundStreakArr) {
           const isLastRound = counter === roundStreakArr.length - 1;
-          if (!roundObj.isContinue || isLastRound) {
+          if ((!roundObj.isContinue || isLastRound) && !isDraft) {
             await assignPatch({
               categoryId,
               highestStreak: roundObj.highestStreak,
@@ -266,6 +266,7 @@ const editScore = async (reqBody, userId) => {
     totalScore,
     totalShots,
     eventId,
+    isDraft,
   } = reqBody;
 
   const session = await mongoose.startSession();
@@ -488,7 +489,8 @@ const editScore = async (reqBody, userId) => {
 
     if (
       ANALYSIS_CATEGORY.includes(categoryObj.name) &&
-      roundStreakArr.length > 0
+      roundStreakArr.length > 0 &&
+      !isDraft
     ) {
       let previousIsContinue = false;
       let lastValidHighestStreak = 0;
@@ -1035,8 +1037,6 @@ function getDateRange(startDate, endDate) {
 }
 
 const listScore = async (reqBody, userId) => {
-  console.log(reqBody, userId);
-
   const {
     page = 1,
     limit = 10,

@@ -32,6 +32,7 @@ const getAnalysis = async (reqBody, user) => {
       $lte: end,
     },
     isDeleted: false,
+    isDraft: false,
   };
 
   if (eventType) {
@@ -581,22 +582,27 @@ const getAnalysis = async (reqBody, user) => {
         highestScoreByGun: [
           {
             $match: {
-              gunId: { $ne: null }
-            }
+              gunId: { $ne: null },
+            },
           },
           {
             $addFields: {
               hitPercentage: {
                 $cond: [
                   { $gt: ["$totalShots", 0] },
-                  { $multiply: [{ $divide: ["$totalScore", "$totalShots"] }, 100] },
-                  0
-                ]
-              }
-            }
+                  {
+                    $multiply: [
+                      { $divide: ["$totalScore", "$totalShots"] },
+                      100,
+                    ],
+                  },
+                  0,
+                ],
+              },
+            },
           },
           {
-            $sort: { hitPercentage: -1 }
+            $sort: { hitPercentage: -1 },
           },
           {
             $group: {
@@ -604,12 +610,12 @@ const getAnalysis = async (reqBody, user) => {
               name: { $first: "$guns.name" },
               chokeSize: { $first: "$guns.ChokeSize" },
               model: { $first: "$guns.model" },
-              highestScore: { $first: "$hitPercentage" }
-            }
+              highestScore: { $first: "$hitPercentage" },
+            },
           },
           {
-            $sort: { highestScorePercentage: -1 }
-          }
+            $sort: { highestScorePercentage: -1 },
+          },
         ],
         averageScoreByGun: [
           {
@@ -789,11 +795,19 @@ const getAnalysis = async (reqBody, user) => {
       result.gun.pullLength;
   }
 
-  const isRecordExist = await AnalysisRecord.findOne({userId:userId,categoryId:categoryId,isDeleted:false});
-  if(!isRecordExist){
-    await AnalysisRecord.create({userId:userId,categoryId:categoryId,recordDate:new Date()});
-  }else{
-    isRecordExist.recordDate=new Date();
+  const isRecordExist = await AnalysisRecord.findOne({
+    userId: userId,
+    categoryId: categoryId,
+    isDeleted: false,
+  });
+  if (!isRecordExist) {
+    await AnalysisRecord.create({
+      userId: userId,
+      categoryId: categoryId,
+      recordDate: new Date(),
+    });
+  } else {
+    isRecordExist.recordDate = new Date();
     await isRecordExist.save();
   }
   return result;
