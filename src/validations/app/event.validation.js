@@ -20,7 +20,9 @@ const create = {
     categoryId: Joi.string().required().custom(objectId),
     alertType: Joi.string().valid(...NOTIFICATION_TIME),
     isAutoDelete: Joi.boolean().default(false),
-    recurringType: Joi.string().valid(...RECURRING_EVENT_TYPE),
+    recurringType: Joi.string()
+      .valid(...RECURRING_EVENT_TYPE)
+      .required(),
   }),
 };
 
@@ -37,6 +39,7 @@ const list = {
     page: Joi.number(),
     page: Joi.number(),
     isAdmin: Joi.boolean(),
+    date: Joi.string().allow(""),
   }),
 };
 
