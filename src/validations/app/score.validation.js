@@ -126,7 +126,7 @@ const edit = {
     totalScore: Joi.number().integer().min(0).required(),
     isDeleted: Joi.boolean().required(),
     scoreImage: Joi.string().allow(""),
-    scoreDate: Joi.date().required(),
+    scoreDate: Joi.date().required(), // remove score date as discussed
     totalShots: Joi.number().integer().min(0).required(),
     gunId: Joi.string().custom(objectId).allow("", null),
     eventId: Joi.string().custom(objectId),
