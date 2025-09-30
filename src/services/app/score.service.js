@@ -88,6 +88,16 @@ const getHighestStreak = async (rounds) => {
   }
 };
 
+function isTodayOrFuture(dateString) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const givenDate = new Date(dateString);
+  givenDate.setHours(0, 0, 0, 0);
+
+  return givenDate.getTime() >= today.getTime();
+}
+
 const createScore = async (reqBody, userId) => {
   const {
     location,
@@ -106,6 +116,13 @@ const createScore = async (reqBody, userId) => {
     eventId,
     isDraft,
   } = reqBody;
+
+  if (!isTodayOrFuture(scoreDate)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid date. Please select today or a future date."
+    );
+  }
 
   let roundIds = [];
   let scoreCountFlag = false;
@@ -287,6 +304,7 @@ const editScore = async (reqBody, userId) => {
       scoreId,
       isDeleted: { $ne: true },
     }).session(session);
+
     const existingPosts = await ScorePost.find({
       scoreId,
       isDeleted: { $ne: true },
@@ -454,8 +472,8 @@ const editScore = async (reqBody, userId) => {
       totalShots,
       eventId,
       roundIds: updatedRoundIds,
+      isDraft,
     });
-
     if (scoreImage) {
       // Extract just the image filename from the full path
       const newImageName = scoreImage.split("/").pop(); // e.g., "new-image.png"
@@ -520,6 +538,7 @@ const editScore = async (reqBody, userId) => {
 
     await session.commitTransaction();
     session.endSession();
+
     return existingScore;
   } catch (error) {
     console.error("🚨 ~ updateScore ~ error:", error);
@@ -1137,6 +1156,7 @@ const listScore = async (reqBody, userId) => {
         createdAt: 1,
         updatedAt: 1,
         isPatch: 1,
+        isDraft: 1,
       },
     },
     {

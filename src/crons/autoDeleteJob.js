@@ -13,7 +13,7 @@ async function getOldEvents() {
     const oldEvents = await Event.aggregate([
       {
         $match: {
-          createdAt: { $lt: thirtyDaysAgo },
+          endDate: { $lt: thirtyDaysAgo },
           isDeleted: false,
           isAdmin: false,
           isAutoDelete: true,

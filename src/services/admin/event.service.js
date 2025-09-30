@@ -96,11 +96,11 @@ const deleteEvent = async (eventId) => {
       { session }
     );
 
-    await Score.updateMany(
-      { eventId },
-      { $set: { isDeleted: true } },
-      { session }
-    );
+    // await Score.updateMany(
+    //   { eventId },
+    //   { $set: { isDeleted: true } },
+    //   { session }
+    // );
 
     await session.commitTransaction();
     session.endSession();

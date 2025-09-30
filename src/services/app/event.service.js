@@ -76,7 +76,7 @@ const createEvent = async (eventBody, user) => {
       ],
       { session }
     );
-    console.log("alertType ", alertType);
+
     if (alertType) {
       await UserCalendar.create(
         [
