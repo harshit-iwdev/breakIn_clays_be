@@ -14,6 +14,7 @@ const createEvent = catchAsync(async (req, res) => {
 });
 
 const getEvent = catchAsync(async (req, res) => {
+  console.log("event get id ", req.params.eventId);
   const event = await eventService.getEvent(req.params.eventId);
   const dates = eventService.getDatesBetweenWithRecurring(event);
   res.sendJSONResponse(

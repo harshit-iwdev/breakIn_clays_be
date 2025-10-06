@@ -273,170 +273,6 @@ const editEvent = async (eventBody, user) => {
   }
 };
 
-// const listEvents = async (reqBody, userId) => {
-//   const { page = 1, limit = 10, isAdmin, search, date } = reqBody;
-
-//   let filter = { userId: userId, isDeleted: false };
-
-//   console.log(userId);
-
-//   if (date) {
-//     const startOfDay = new Date(date);
-//     startOfDay.setHours(0, 0, 0, 0);
-
-//     const endOfDay = new Date(date);
-//     endOfDay.setHours(23, 59, 59, 999);
-//     filter.startDate = { $gte: startOfDay, $lte: endOfDay };
-//     console.log(filter.startDate);
-//   }
-
-//   if (isAdmin) {
-//     filter = { isAdmin: true, isDeleted: false };
-//   }
-
-//   if (search) {
-//     filter.$or = [
-//       { name: { $regex: `.*${search.toLowerCase()}.*`, $options: "i" } },
-//       { location: { $regex: `.*${search.toLowerCase()}.*`, $options: "i" } },
-//     ];
-//   }
-
-//   let pipeline = [
-//     {
-//       $match: filter,
-//     },
-//     {
-//       $lookup: {
-//         from: "categories",
-//         localField: "categoryId",
-//         foreignField: "_id",
-//         as: "category",
-//       },
-//     },
-//     {
-//       $unwind: {
-//         path: "$category",
-//         preserveNullAndEmptyArrays: true,
-//       },
-//     },
-//     {
-//       $lookup: {
-//         from: "usercalendars",
-//         let: {
-//           userIdObj: new mongoose.Types.ObjectId(userId),
-//           eventId: "$_id",
-//         },
-//         pipeline: [
-//           {
-//             $match: {
-//               $expr: {
-//                 $and: [
-//                   { $eq: ["$userId", "$$userIdObj"] },
-//                   { $eq: ["$eventId", "$$eventId"] },
-//                 ],
-//               },
-//             },
-//           },
-//         ],
-//         as: "eventNotified",
-//       },
-//     },
-//     {
-//       $unwind: {
-//         path: "$eventNotified",
-//         preserveNullAndEmptyArrays: true,
-//       },
-//     },
-//     {
-//       $addFields: {
-//         isNotify: {
-//           $cond: {
-//             if: { $gt: [{ $type: "$eventNotified" }, "missing"] },
-//             then: true,
-//             else: false,
-//           },
-//         },
-//         alertType: {
-//           $cond: {
-//             if: { $gt: [{ $type: "$eventNotified" }, "missing"] },
-//             then: "$eventNotified.alertType",
-//             else: "",
-//           },
-//         },
-//       },
-//     },
-//     {
-//       $project: {
-//         _id: 1,
-//         name: 1,
-//         startDate: 1,
-//         endDate: 1,
-//         location: 1,
-//         longitude: 1,
-//         latitude: 1,
-//         isAdmin: 1,
-//         isNotify: 1,
-//         alertType: 1,
-//         recurringType: 1,
-//         category: {
-//           _id: 1,
-//           name: 1,
-//           image: 1,
-//         },
-//       },
-//     },
-//     {
-//       $sort: {
-//         startDate: -1,
-//       },
-//     },
-//     {
-//       $facet: {
-//         totalRecords: [{ $count: "total" }],
-//         results: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-//       },
-//     },
-//     {
-//       $addFields: {
-//         totalRecords: {
-//           $ifNull: [{ $arrayElemAt: ["$totalRecords.total", 0] }, 0],
-//         },
-//       },
-//     },
-//   ];
-
-//   const [event] = await Event.aggregate(pipeline);
-
-//   if (date) {
-//     const formattedDate = new Date(date).toISOString().split("T")[0];
-
-//     results = allEvents.filter((ev) => {
-//       const dates = getDatesBetweenWithRecurring(ev);
-//       return dates.includes(formattedDate);
-//     });
-//   }
-
-//   let data = {
-//     totalRecords: 0,
-//     result: [],
-//     page: page,
-//     totalPages: 0,
-//   };
-
-//   if (event.totalRecords < 1) {
-//     return data;
-//   } else {
-//     data = {
-//       totalRecords: event.totalRecords,
-//       results: event.results,
-//       page: page,
-//       totalPages: Math.ceil(event.totalRecords / limit),
-//     };
-//   }
-
-//   return data;
-// };
-
 const listEvents = async (reqBody, userId) => {
   const { page = 1, limit = 10, isAdmin, search, date } = reqBody;
 
@@ -554,17 +390,22 @@ const listEvents = async (reqBody, userId) => {
     return data;
   }
 
-  let results = event.results;
+  const formattedDate = date
+    ? new Date(date).toISOString().split("T")[0]
+    : null;
 
-  // ✅ Recurrence-based filtering here
-  if (date) {
-    const formattedDate = new Date(date).toISOString().split("T")[0];
-
-    results = results.filter((ev) => {
+  let results = event.results
+    .map((ev) => {
       const dates = getDatesBetweenWithRecurring(ev);
-      return dates.includes(formattedDate);
-    });
-  }
+      ev.availableDates = dates;
+
+      // if date filter provided — keep only matching events
+      if (formattedDate && !dates.includes(formattedDate)) {
+        return null; // skip this event later
+      }
+      return ev;
+    })
+    .filter(Boolean); // removes all nulls
 
   const totalRecords = results.length;
   const totalPages = Math.ceil(totalRecords / limit);
