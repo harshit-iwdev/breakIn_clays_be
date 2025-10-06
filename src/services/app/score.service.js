@@ -10,6 +10,8 @@ const {
 } = require("../../models");
 const ApiError = require("../../utils/ApiError");
 const mongoose = require("mongoose");
+const { eventService } = require("./index");
+
 const {
   CONDITIONAL_CATEGORY,
   ANALYSIS_CATEGORY,
@@ -98,6 +100,11 @@ function isTodayOrFuture(dateString) {
   return givenDate.getTime() >= today.getTime();
 }
 
+function normalizeDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toISOString().split("T")[0].toString(); // YYYY-MM-DD
+}
+
 const createScore = async (reqBody, userId) => {
   const {
     location,
@@ -117,13 +124,26 @@ const createScore = async (reqBody, userId) => {
     isDraft,
   } = reqBody;
 
-  if (!isTodayOrFuture(scoreDate)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Invalid date. Please select today or a future date."
-    );
-  }
+  // if (!isTodayOrFuture(scoreDate)) {
+  //   throw new ApiError(
+  //     httpStatus.BAD_REQUEST,
+  //     "Invalid date. Please select today or a future date."
+  //   );
+  // }
 
+  if (eventId) {
+    const eventDetails = await eventService.getEventById(eventId);
+    const availableDates =
+      eventService.getDatesBetweenWithRecurring(eventDetails);
+    const normalizeScoreDate = normalizeDate(scoreDate);
+
+    if (!availableDates.includes(normalizeScoreDate)) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Invalid date seleted. Please select event date only"
+      );
+    }
+  }
   let roundIds = [];
   let scoreCountFlag = false;
   let scoreStreak = 0;
@@ -290,6 +310,20 @@ const editScore = async (reqBody, userId) => {
   session.startTransaction();
 
   try {
+    if (eventId) {
+      const eventDetails = await eventService.getEventById(eventId);
+      const availableDates =
+        eventService.getDatesBetweenWithRecurring(eventDetails);
+      const normalizeScoreDate = normalizeDate(scoreDate);
+
+      if (!availableDates.includes(normalizeScoreDate)) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "Invalid date seleted. Please select event date only"
+        );
+      }
+    }
+
     const existingScore = await Score.findOne({ _id: scoreId, userId }).session(
       session
     );

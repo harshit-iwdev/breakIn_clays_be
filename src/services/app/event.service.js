@@ -58,6 +58,12 @@ const createEvent = async (eventBody, user) => {
 
     const userId = user._id;
 
+    const dateStatus = validateEventDates(startDate, endDate);
+    const { valid, reason } = dateStatus;
+    if (!valid) {
+      throw new ApiError(httpStatus.BAD_REQUEST, reason);
+    }
+
     const event = await Event.create(
       [
         {
@@ -101,10 +107,7 @@ const createEvent = async (eventBody, user) => {
     console.log("~ createEvent ~ error:", error);
     await session.abortTransaction();
     session.endSession();
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      "Unable to create event. Please try again later."
-    );
+    throw new ApiError(httpStatus.BAD_REQUEST, error.message);
   }
 };
 
@@ -700,6 +703,49 @@ function getDatesBetweenWithRecurring(event) {
   return dates;
 }
 
+function validateEventDates(startDateStr, endDateStr) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  // Normalize to date-only
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  // Max allowed = today + 2 years
+  const maxAllowed = new Date(now);
+  maxAllowed.setFullYear(now.getFullYear() + 2);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    return { valid: false, reason: "Invalid date format" };
+  }
+
+  if (start < now) {
+    return {
+      valid: false,
+      reason: "Start date must be today or in the future",
+    };
+  }
+
+  if (end < start) {
+    return {
+      valid: false,
+      reason: "End date must be after or equal to start date",
+    };
+  }
+
+  if (end > maxAllowed) {
+    return {
+      valid: false,
+      reason: "End date must be within 2 years from today",
+    };
+  }
+
+  return { valid: true };
+}
+
 const notifyEvent = async (eventBody, user) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -771,4 +817,5 @@ module.exports = {
   listEvents,
   userCalendarList,
   notifyEvent,
+  getDatesBetweenWithRecurring,
 };
