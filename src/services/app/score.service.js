@@ -124,13 +124,6 @@ const createScore = async (reqBody, userId) => {
     isDraft,
   } = reqBody;
 
-  // if (!isTodayOrFuture(scoreDate)) {
-  //   throw new ApiError(
-  //     httpStatus.BAD_REQUEST,
-  //     "Invalid date. Please select today or a future date."
-  //   );
-  // }
-
   if (eventId) {
     const eventDetails = await eventService.getEventById(eventId);
     const availableDates =
@@ -279,6 +272,10 @@ const createScore = async (reqBody, userId) => {
     console.log("🚀 ~ createScore ~ error:", error);
     await session.abortTransaction();
     session.endSession();
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       "Unable to add score. Please try again later."
@@ -310,6 +307,7 @@ const editScore = async (reqBody, userId) => {
   session.startTransaction();
 
   try {
+    console.log(eventId);
     if (eventId) {
       const eventDetails = await eventService.getEventById(eventId);
       const availableDates =
@@ -578,6 +576,11 @@ const editScore = async (reqBody, userId) => {
     console.error("🚨 ~ updateScore ~ error:", error);
     await session.abortTransaction();
     session.endSession();
+
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
     throw new ApiError(
       httpStatus.BAD_REQUEST,
       "Unable to update score. Please try again later."
