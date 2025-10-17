@@ -171,6 +171,7 @@ const list = {
     eventId: Joi.string().custom(objectId),
     startDate: dateFormat.optional(),
     endDate: dateFormat.optional(),
+    currentDate: dateFormat.optional(),
     eventType: Joi.string()
       .valid(...SCORE_EVENT_TYPE)
       .optional()

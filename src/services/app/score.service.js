@@ -1098,6 +1098,7 @@ const listScore = async (reqBody, userId) => {
     categoryId,
     eventId,
     search,
+    currentDate,
     startDate,
     endDate,
     eventType,
@@ -1109,6 +1110,13 @@ const listScore = async (reqBody, userId) => {
     categoryId: new mongoose.Types.ObjectId(categoryId),
   };
 
+  if ((startDate || endDate) && currentDate) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "Invalid request: Provide either 'currentDate' or both 'startDate' and 'endDate', not both."
+    );
+  }
+
   if (startDate && endDate) {
     if (startDate > endDate) {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date selection!");
@@ -1118,6 +1126,14 @@ const listScore = async (reqBody, userId) => {
       ...(start && { $gte: start }),
       ...(end && { $lte: end }),
     };
+  }
+
+  if (currentDate) {
+    const { start } = getDateRange(currentDate, currentDate);
+    filter.createdAt = {
+      ...(start && { $lte: start }),
+    };
+    filter.isDraft = false;
   }
 
   if (eventId) {
