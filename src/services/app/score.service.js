@@ -307,7 +307,6 @@ const editScore = async (reqBody, userId) => {
   session.startTransaction();
 
   try {
-    console.log(eventId);
     if (eventId) {
       const eventDetails = await eventService.getEventById(eventId);
       const availableDates =
