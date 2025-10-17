@@ -3,7 +3,10 @@ const { Event, UserCalendar, Score } = require("../../models");
 const ApiError = require("../../utils/ApiError");
 const mongoose = require("mongoose");
 const moment = require("moment"); // Install with `npm install moment`
-const { NOTIFICATION_TIME } = require("../../config/config");
+const {
+  NOTIFICATION_TIME,
+  RECURRING_EVENT_TYPE,
+} = require("../../config/config");
 const { normalizeDateString } = require("../../utils/dateUtils");
 
 async function getNotificationTime(eventDate, selectedOption) {
@@ -58,10 +61,20 @@ const createEvent = async (eventBody, user) => {
 
     const userId = user._id;
 
-    const dateStatus = validateEventDates(startDate, endDate);
-    const { valid, reason } = dateStatus;
+    const { valid, reason } = validateEventDates(startDate, endDate);
+
     if (!valid) {
       throw new ApiError(httpStatus.BAD_REQUEST, reason);
+    }
+
+    if (recurringType == "MONTHLY") {
+      const dates = getMonthlyRecurrences(startDate, endDate);
+      if (!dates.includes(endDate)) {
+        throw new ApiError(
+          httpStatus.BAD_REQUEST,
+          "For monthly recurrences, the end date must fall on the same day of the following month as the start date."
+        );
+      }
     }
 
     const event = await Event.create(
@@ -488,62 +501,6 @@ const userCalendarList = async (userId) => {
   };
 };
 
-function getDatesBetween(startDate, endDate) {
-  let dates = [];
-  let currentDate = new Date(startDate);
-  let lastDate = new Date(endDate);
-
-  while (currentDate <= lastDate) {
-    dates.push(new Date(currentDate).toISOString().split("T")[0]); // Push date in YYYY-MM-DD format
-    currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
-  }
-
-  return dates;
-}
-
-function getDatesBetweenWithRecurring(event) {
-  let { startDate, endDate, recurringType } = event;
-
-  recurringType =
-    !recurringType || recurringType === "DOES NOT REPEAT"
-      ? "DAILY"
-      : recurringType.toUpperCase();
-
-  const dates = [];
-  let currentDate = new Date(startDate);
-  const lastDate = new Date(endDate);
-
-  // Decide increment
-  let stepDays;
-  switch (recurringType) {
-    case "WEEKLY":
-      stepDays = 7;
-      break;
-    case "BIWEEKLY":
-      stepDays = 14;
-      break;
-    case "MONTHLY":
-      stepDays = "MONTHLY";
-      break;
-    case "DAILY":
-    default:
-      stepDays = 1;
-  }
-
-  // Always include the starting date too
-  while (currentDate <= lastDate) {
-    dates.push(new Date(currentDate).toISOString().split("T")[0]);
-
-    if (stepDays === "MONTHLY") {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    } else {
-      currentDate.setDate(currentDate.getDate() + stepDays);
-    }
-  }
-
-  return dates;
-}
-
 function validateEventDates(startDateStr, endDateStr) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -585,6 +542,102 @@ function validateEventDates(startDateStr, endDateStr) {
   }
 
   return { valid: true };
+}
+
+function getMonthlyRecurrences(startDate, endDate, separator = "/") {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const results = [];
+
+  const targetWeekday = start.getDay(); // 0=Sunday ... 6=Saturday
+  const nthWeekday = Math.ceil(start.getDate() / 7); // which occurrence (nth weekday)
+
+  let current = new Date(start);
+
+  while (current <= end) {
+    // Move to next month
+    const nextMonth = new Date(
+      current.getFullYear(),
+      current.getMonth() + 1,
+      1
+    );
+
+    // All occurrences of target weekday in the next month
+    const occurrences = [];
+    const year = nextMonth.getFullYear();
+    const month = nextMonth.getMonth();
+
+    for (let d = 1; d <= 31; d++) {
+      const date = new Date(year, month, d);
+      if (date.getMonth() !== month) break; // stop when month overflows
+      if (date.getDay() === targetWeekday) occurrences.push(date);
+    }
+
+    // Pick nth weekday or fallback to last occurrence
+    const recurringDate =
+      occurrences[nthWeekday - 1] || occurrences[occurrences.length - 1];
+
+    if (recurringDate > end) break;
+    results.push(recurringDate);
+    current = recurringDate;
+  }
+
+  // Include start date as first occurrence
+  results.unshift(start);
+
+  // Format results to local date string with separator
+  const formatted = results.map((date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}${separator}${m}${separator}${d}`;
+  });
+
+  return formatted;
+}
+
+function getDatesBetweenWithRecurring(event) {
+  let { startDate, endDate, recurringType } = event;
+
+  recurringType =
+    !recurringType || recurringType === "DOES NOT REPEAT"
+      ? "DAILY"
+      : recurringType.toUpperCase();
+
+  // Handle MONTHLY recurrence via getMonthlyRecurrences
+  if (recurringType === "MONTHLY") {
+    return getMonthlyRecurrences(startDate, endDate, "-");
+  }
+
+  // Otherwise fall back to generic date stepping
+  const dates = [];
+  let currentDate = new Date(startDate);
+  const lastDate = new Date(endDate);
+
+  let stepDays;
+  switch (recurringType) {
+    case "WEEKLY":
+      stepDays = 7;
+      break;
+    case "BIWEEKLY":
+      stepDays = 14;
+      break;
+    case "DAILY":
+    default:
+      stepDays = 1;
+  }
+
+  while (currentDate <= lastDate) {
+    // Format YYYY-MM-DD for consistency
+    const y = currentDate.getFullYear();
+    const m = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const d = String(currentDate.getDate()).padStart(2, "0");
+    dates.push(`${y}-${m}-${d}`);
+
+    currentDate.setDate(currentDate.getDate() + stepDays);
+  }
+
+  return dates;
 }
 
 const notifyEvent = async (eventBody, user) => {
