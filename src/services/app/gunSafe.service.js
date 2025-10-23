@@ -40,40 +40,40 @@ const createGun = async (gunSafeBody,user) => {
 
     const userId = user._id;
 
-    const parts = [
-        { type: "GAUGE", value: gauge },
-        { type: "COMB", value: comb },
-        { type: "BARREL", value: barrel },
-        { type: "ACTION_TYPE", value: actionType },
-        { type: "RIB", value: rib },
-        { type: "PULL_LENGTH", value: pullLength },
-        { type: "CHOKE_TYPE", value: chokeType },
-        { type: "CHOKE_MATERIAL", value: chokeMaterial },
-        { type: "CHOKE_SIZE", value: ChokeSize },
-      ];
-      if(ChokeSize2){
-        parts.push({ type: "CHOKE_SIZE", value: ChokeSize2 })
-      }
+    // const parts = [
+    //     { type: "GAUGE", value: gauge },
+    //     { type: "COMB", value: comb },
+    //     { type: "BARREL", value: barrel },
+    //     { type: "ACTION_TYPE", value: actionType },
+    //     { type: "RIB", value: rib },
+    //     { type: "PULL_LENGTH", value: pullLength },
+    //     { type: "CHOKE_TYPE", value: chokeType },
+    //     { type: "CHOKE_MATERIAL", value: chokeMaterial },
+    //     { type: "CHOKE_SIZE", value: ChokeSize },
+    //   ];
+    //   if(ChokeSize2){
+    //     parts.push({ type: "CHOKE_SIZE", value: ChokeSize2 })
+    //   }
     
-      let isNewAdded = false;
+      // let isNewAdded = false;
       let gunStatus = "APPROVED";
-      let newFields = [];
+      // let newFields = [];
 
-    for (const part of parts) {
-      const existingPart = await GunDetail.findOne({ type: part.type, value: part.value, isDeleted: false }).session(session);
+    // for (const part of parts) {
+    //   const existingPart = await GunDetail.findOne({ type: part.type, value: part.value, isDeleted: false }).session(session);
       
-      if (!existingPart) {
-          isNewAdded = true;
-          gunStatus = "PENDING";
-          newFields.push({ type: part.type, value: part.value});
-      }
-    }
+    //   if (!existingPart) {
+    //       isNewAdded = true;
+    //       gunStatus = "PENDING";
+    //       newFields.push({ type: part.type, value: part.value});
+    //   }
+    // }
 
     const [gunSafe] = await GunSafe.create([{ name, gauge, comb, barrel, actionType, rib, pullLength, chokeType, chokeMaterial, ChokeSize, brand, model, ChokeSize2, userId, status:gunStatus }], { session });
     
-    if(isNewAdded){
-      await GunRequest.create([{ requestFields:newFields,gunSafeId:gunSafe._id,userId,status:"PENDING" }], { session });
-    }
+    // if(isNewAdded){
+    //   await GunRequest.create([{ requestFields:newFields,gunSafeId:gunSafe._id,userId,status:"PENDING" }], { session });
+    // }
 
     await session.commitTransaction();
     
@@ -271,59 +271,59 @@ const editGun = async(gunSafeBody)=>{
     }
     const userId = gunSafe.userId;
 
-    const parts = [
-        { type: "GAUGE", value: gauge },
-        { type: "COMB", value: comb },
-        { type: "BARREL", value: barrel },
-        { type: "ACTION_TYPE", value: actionType },
-        { type: "RIB", value: rib },
-        { type: "PULL_LENGTH", value: pullLength },
-        { type: "CHOKE_TYPE", value: chokeType },
-        { type: "CHOKE_MATERIAL", value: chokeMaterial },
-        { type: "CHOKE_SIZE", value: ChokeSize },
-      ];
+    // const parts = [
+    //     { type: "GAUGE", value: gauge },
+    //     { type: "COMB", value: comb },
+    //     { type: "BARREL", value: barrel },
+    //     { type: "ACTION_TYPE", value: actionType },
+    //     { type: "RIB", value: rib },
+    //     { type: "PULL_LENGTH", value: pullLength },
+    //     { type: "CHOKE_TYPE", value: chokeType },
+    //     { type: "CHOKE_MATERIAL", value: chokeMaterial },
+    //     { type: "CHOKE_SIZE", value: ChokeSize },
+    //   ];
     
-      if(ChokeSize2){
-        parts.push({ type: "CHOKE_SIZE", value: ChokeSize2 })
-      }
-      let isNewAdded = false;
+      // if(ChokeSize2){
+      //   parts.push({ type: "CHOKE_SIZE", value: ChokeSize2 })
+      // }
+      // let isNewAdded = false;
       let gunStatus = gunSafe.status;
-      let newFields = [];
+      // let newFields = [];
 
-      for (const part of parts) {
-        const existingPart = await GunDetail.findOne({ type: part.type, value: part.value, isDeleted: false }).session(session);
+      // for (const part of parts) {
+      //   const existingPart = await GunDetail.findOne({ type: part.type, value: part.value, isDeleted: false }).session(session);
         
-        if (!existingPart) {
-            isNewAdded = true;
-            gunStatus = "PENDING";
-            newFields.push({ type: part.type, value: part.value});
-        }
-      }
+      //   if (!existingPart) {
+      //       isNewAdded = true;
+      //       gunStatus = "PENDING";
+      //       newFields.push({ type: part.type, value: part.value});
+      //   }
+      // }
 
-    if(isNewAdded){
-      const existingRequest = await GunRequest.findOne({ gunSafeId: gunSafe._id, isDeleted: false }).session(session);
-      if (existingRequest) {
-        await GunRequest.updateOne(
-          { gunSafeId: gunSafe._id, isDeleted: false },
-          { $set: { requestFields: newFields, status: "PENDING" } },
-          { session }
-        );
-      } else {
-        await GunRequest.create([{ requestFields:newFields,gunSafeId:gunSafe._id,userId,status:"PENDING" }], { session });
-      }
-    }
+    // if(isNewAdded){
+    //   const existingRequest = await GunRequest.findOne({ gunSafeId: gunSafe._id, isDeleted: false }).session(session);
+    //   if (existingRequest) {
+    //     await GunRequest.updateOne(
+    //       { gunSafeId: gunSafe._id, isDeleted: false },
+    //       { $set: { requestFields: newFields, status: "PENDING" } },
+    //       { session }
+    //     );
+    //   } else {
+    //     await GunRequest.create([{ requestFields:newFields,gunSafeId:gunSafe._id,userId,status:"PENDING" }], { session });
+    //   }
+    // }
 
-    if(isNewAdded == false && gunSafe.status == "REJECTED"){
-        gunStatus = "APPROVED";
-    }
+    // if(isNewAdded == false && gunSafe.status == "REJECTED"){
+    //     gunStatus = "APPROVED";
+    // }
 
-    if(gunStatus == "APPROVED"){
-      await GunRequest.updateMany(
-        { gunSafeId: gunSafe._id },
-        { $set: { isDeleted: true } },
-        { session }
-      );
-    }
+    // if(gunStatus == "APPROVED"){
+    //   await GunRequest.updateMany(
+    //     { gunSafeId: gunSafe._id },
+    //     { $set: { isDeleted: true } },
+    //     { session }
+    //   );
+    // }
 
     if (name) gunSafe.name = name;
     if (model) gunSafe.model = model;
