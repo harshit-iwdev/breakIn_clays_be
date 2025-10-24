@@ -169,6 +169,7 @@ const list = {
     limit: Joi.number(),
     page: Joi.number(),
     eventId: Joi.string().custom(objectId),
+    noDraft: Joi.boolean(),
     startDate: dateFormat.optional(),
     endDate: dateFormat.optional(),
     currentDate: dateFormat.optional(),
