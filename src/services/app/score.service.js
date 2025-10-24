@@ -1102,6 +1102,7 @@ const listScore = async (reqBody, userId) => {
     startDate,
     endDate,
     eventType,
+    noDraft
   } = reqBody;
 
   let filter = {
@@ -1109,6 +1110,10 @@ const listScore = async (reqBody, userId) => {
     isDeleted: false,
     categoryId: new mongoose.Types.ObjectId(categoryId),
   };
+
+  if(noDraft){
+    filter.isDraft = false;
+  }
 
   if ((startDate || endDate) && currentDate) {
     throw new ApiError(
@@ -1213,7 +1218,7 @@ const listScore = async (reqBody, userId) => {
     },
     {
       $sort: {
-        scoreDate: -1, // Sort by scoreDate in descending order (future dates first)
+        scoreDate: 1, // Sort by scoreDate in descending order (future dates first)
         updatedAt: -1, // Then by createdAt for scores with same date (latest created first)
       },
     },
