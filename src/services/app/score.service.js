@@ -1102,7 +1102,7 @@ const listScore = async (reqBody, userId) => {
     startDate,
     endDate,
     eventType,
-    noDraft
+    noDraft,
   } = reqBody;
 
   let filter = {
@@ -1111,7 +1111,7 @@ const listScore = async (reqBody, userId) => {
     categoryId: new mongoose.Types.ObjectId(categoryId),
   };
 
-  if(noDraft){
+  if (noDraft) {
     filter.isDraft = false;
   }
 
@@ -1127,7 +1127,7 @@ const listScore = async (reqBody, userId) => {
       throw new ApiError(httpStatus.BAD_REQUEST, "Invalid date selection!");
     }
     const { start, end } = getDateRange(startDate, endDate);
-    filter.createdAt = {
+    filter.scoreDate = {
       ...(start && { $gte: start }),
       ...(end && { $lte: end }),
     };
@@ -1135,7 +1135,7 @@ const listScore = async (reqBody, userId) => {
 
   if (currentDate) {
     const { start } = getDateRange(currentDate, currentDate);
-    filter.createdAt = {
+    filter.scoreDate = {
       ...(start && { $lte: start }),
     };
     filter.isDraft = false;
@@ -1214,6 +1214,7 @@ const listScore = async (reqBody, userId) => {
         updatedAt: 1,
         isPatch: 1,
         isDraft: 1,
+        eventId: 1,
       },
     },
     {
