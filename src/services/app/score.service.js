@@ -123,6 +123,7 @@ const createScore = async (reqBody, userId) => {
     eventId,
     isDraft,
   } = reqBody;
+  console.log(JSON.stringify(reqBody));
 
   if (eventId) {
     const eventDetails = await eventService.getEventById(eventId);

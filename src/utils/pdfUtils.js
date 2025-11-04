@@ -1,266 +1,352 @@
-const puppeteer = require('puppeteer');
-const moment = require('moment');
-const fs = require('fs');
-const path = require('path');
-const { CONDITIONAL_CATEGORY } = require('../config/config');
+const puppeteer = require("puppeteer");
+const moment = require("moment");
+const fs = require("fs");
+const path = require("path");
+const {
+  CONDITIONAL_CATEGORY,
+  PDF_CONDITIONAL_CATEGORIES,
+} = require("../config/config");
 const templatePath = path.join(__dirname);
 
-module.exports.pdfAnalysisGenerator = async (data)=>{
-  let {missedPercentage,hitPercentage,highestScore,averageScore,averageRoundScoresByRound,
-    averagePostScoresByPost,highestRoundScoresByRound,highestPostScoresByPost,
-    topHitPercentageRoundWithGun,highestScoreByGun,averageScoreByGun,
-    highestPostHitPercentByPost,averagePostHitPercentByPost,category,top5ScorePercent,
-    scoresByNoOfRounds,averageScorePercentage,highestRoundScore,averageRoundScore,averageStationScorePercentage } = data;
-    let condition = false;
+module.exports.pdfAnalysisGenerator = async (data) => {
+  let {
+    missedPercentage,
+    hitPercentage,
+    highestScore,
+    averageScore,
+    averageRoundScoresByRound,
+    averagePostScoresByPost,
+    highestRoundScoresByRound,
+    highestPostScoresByPost,
+    topHitPercentageRoundWithGun,
+    highestScoreByGun,
+    averageScoreByGun,
+    highestPostHitPercentByPost,
+    averagePostHitPercentByPost,
+    category,
+    top5ScorePercent,
+    scoresByNoOfRounds,
+    averageScorePercentage,
+    highestRoundScore,
+    averageRoundScore,
+    averageStationScorePercentage,
+  } = data;
+  let condition = false;
 
-    let roundName = "Round";
-    let postName = "Post";
+  let roundName = "Round";
+  let postName = "Post";
 
-    if(CONDITIONAL_CATEGORY.includes(category.name)){
-      postName = "Station";
-    }
+  if (CONDITIONAL_CATEGORY.includes(category.name)) {
+    postName = "Station";
+  }
 
-    if("5-Stand" == category.name){
-      postName = "Stand";
-    }
+  if ("5-Stand" == category.name) {
+    postName = "Stand";
+  }
 
-    if("FITASC" == category.name){
-      roundName = "Parcour";
-      postName = "Peg";
-    }
+  if ("FITASC" == category.name) {
+    roundName = "Parcour";
+    postName = "Peg";
+  }
 
-    if(category.name == "Sporting Clays"){
-      condition = true;
-    }
+  // if (category.name == "Sporting Clays") {
+  //   condition = true;
+  // }
 
-    averageRoundScoresByRound = averageRoundScoresByRound.map(item => ({
-      roundNo: `${roundName} ${item.roundNo}`,
-      averageScore: Number(item.averageScore.toFixed(1)),
-      isHide:condition,
-      roundName:roundName
-    }));
+  if (PDF_CONDITIONAL_CATEGORIES.includes(category.name)) {
+    condition = true;
+  }
 
-    highestRoundScoresByRound = highestRoundScoresByRound.map(item => ({
-      roundNo:`${roundName} ${item.roundNo}`,
-      highestScore: Number(item.highestScore.toFixed(1)),
-      isHide:condition,
-      roundName:roundName
-    }));
+  averageRoundScoresByRound = averageRoundScoresByRound.map((item) => ({
+    roundNo: `${roundName} ${item.roundNo}`,
+    averageScore: Number(item.averageScore.toFixed(1)),
+    isHide: condition,
+    roundName: roundName,
+  }));
 
-    highestPostScoresByPost = highestPostScoresByPost.map(item => ({
-      post: `${postName} ${item.post}`,
-      highestScore: Number(item.highestScore.toFixed(1)),
-      isStation:false,
-      postName:postName
-    }));
+  highestRoundScoresByRound = highestRoundScoresByRound.map((item) => ({
+    roundNo: `${roundName} ${item.roundNo}`,
+    highestScore: Number(item.highestScore.toFixed(1)),
+    isHide: condition,
+    roundName: roundName,
+  }));
 
-    highestPostHitPercentByPost = highestPostHitPercentByPost.map(item => ({
-      post: `Station ${item.post}`,
-      highestScore: Number(item.highestScore.toFixed(1)) + " %",
-      isStation:true,
-    }));
+  highestPostScoresByPost = highestPostScoresByPost.map((item) => ({
+    post: `${postName} ${item.post}`,
+    highestScore: Number(item.highestScore.toFixed(1)),
+    isStation: false,
+    postName: postName,
+  }));
 
-    averagePostScoresByPost = averagePostScoresByPost.map(item => ({
-      post: `${postName} ${item.post}`,
-      averageScore: Number(item.averageScore.toFixed(1)),
-      isStation:false,
-      postName:postName
-    }));
+  highestPostHitPercentByPost = highestPostHitPercentByPost.map((item) => ({
+    post: `Station ${item.post}`,
+    highestScore: Number(item.highestScore.toFixed(1)) + " %",
+    isStation: true,
+  }));
 
-    averagePostHitPercentByPost = averagePostHitPercentByPost.map(item => ({
-      post: `Station ${item.post}`,
-      averageScore: Number(item.averageScore.toFixed(1)) + " %",
-      isStation:true
-    }));
+  averagePostScoresByPost = averagePostScoresByPost.map((item) => ({
+    post: `${postName} ${item.post}`,
+    averageScore: Number(item.averageScore.toFixed(1)),
+    isStation: false,
+    postName: postName,
+  }));
 
-    topHitPercentageRoundWithGun = topHitPercentageRoundWithGun.map(item => ({
-      roundNo: item.roundNo,
-      gun: item.gun.name?item.gun.name:"-",
-      hitPercentage:item.hitPercentage
-    }));
+  averagePostHitPercentByPost = averagePostHitPercentByPost.map((item) => ({
+    post: `Station ${item.post}`,
+    averageScore: Number(item.averageScore.toFixed(1)) + " %",
+    isStation: true,
+  }));
 
-    top5ScorePercent = top5ScorePercent.map((item,idx) => ({
-      scoreNo: idx+1,
-      scorePercentage: Number(item.scorePercentage.toFixed(1)),
-      isHide:!condition
-    }));
+  topHitPercentageRoundWithGun = topHitPercentageRoundWithGun.map((item) => ({
+    roundNo: item.roundNo,
+    gun: item.gun.name ? item.gun.name : "-",
+    hitPercentage: item.hitPercentage,
+  }));
 
-    scoresByNoOfRounds = scoresByNoOfRounds.map(item => ({
-      roundNo: item.noOfRounds,
-      highestScore: Number(item.highestScore.toFixed(1)),
-      averageScore: Number(item.averageScore.toFixed(1)),
-      isHide:condition,
-      roundName:roundName
-    }));
+  top5ScorePercent = top5ScorePercent.map((item, idx) => ({
+    scoreNo: idx + 1,
+    scorePercentage: Number(item.scorePercentage.toFixed(1)),
+    isHide: !condition,
+  }));
 
-    averageScoreByGun = averageScoreByGun.map(item => ({
-      _id:item._id ,
-      name:item.name ,
-      chokeSize:item.chokeSize ,
-      model:item.model ,
-      averageScore:item.averageScore?Number(item.averageScore.toFixed(1)):"-",
-    }));
+  scoresByNoOfRounds = scoresByNoOfRounds.map((item) => ({
+    roundNo: item.noOfRounds,
+    highestScore: Number(item.highestScore.toFixed(1)),
+    averageScore: Number(item.averageScore.toFixed(1)),
+    isHide: condition,
+    roundName: roundName,
+  }));
 
-  const templateName="pdfAnalysis.html";
+  averageScoreByGun = averageScoreByGun.map((item) => ({
+    _id: item._id,
+    name: item.name,
+    chokeSize: item.chokeSize,
+    model: item.model,
+    averageScore: item.averageScore
+      ? Number(item.averageScore.toFixed(1))
+      : "-",
+  }));
+
+  const templateName = "pdfAnalysis.html";
   const htmlPath = templatePath.replace("/utils", `/template/${templateName}`);
 
-  let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+  let htmlContent = fs.readFileSync(htmlPath, "utf8");
 
-  htmlContent = htmlContent.replace('__TARGET_MISSED__', hitPercentage);
-  
-  htmlContent = htmlContent.replace('__ROUND_NAME__', roundName?roundName:"Round");
-  htmlContent = htmlContent.replace('__IS_BAR_VALUE__', condition);
+  htmlContent = htmlContent.replace("__TARGET_MISSED__", hitPercentage);
 
-  htmlContent = htmlContent.replace('__TARGET_HIT__', missedPercentage);
+  htmlContent = htmlContent.replace(
+    "__ROUND_NAME__",
+    roundName ? roundName : "Round"
+  );
+  htmlContent = htmlContent.replace("__IS_BAR_VALUE__", condition);
 
-  htmlContent = htmlContent.replace('__HIGHEST__', condition?averageScorePercentage.toFixed(1):highestRoundScore.toFixed(1));
+  htmlContent = htmlContent.replace("__TARGET_HIT__", missedPercentage);
 
-  htmlContent = htmlContent.replace('__AVERAGE__', condition?averageStationScorePercentage.toFixed(1):averageRoundScore.toFixed(1));
+  htmlContent = htmlContent.replace(
+    "__HIGHEST__",
+    condition ? averageScorePercentage.toFixed(1) : highestRoundScore.toFixed(1)
+  );
 
-  htmlContent = htmlContent.replace('__TOP_SCORE_ROUND__', `${JSON.stringify(highestRoundScoresByRound)}`);
+  htmlContent = htmlContent.replace(
+    "__AVERAGE__",
+    condition
+      ? averageStationScorePercentage.toFixed(1)
+      : averageRoundScore.toFixed(1)
+  );
 
-  htmlContent = htmlContent.replace('__TOP_SCORE_POST__', condition?`${JSON.stringify(highestPostHitPercentByPost)}`:`${JSON.stringify(highestPostScoresByPost)}`);
+  htmlContent = htmlContent.replace(
+    "__TOP_SCORE_ROUND__",
+    `${JSON.stringify(highestRoundScoresByRound)}`
+  );
 
-  htmlContent = htmlContent.replace('__CATEGORY__', category.name?category.name:"");
+  htmlContent = htmlContent.replace(
+    "__TOP_SCORE_POST__",
+    condition
+      ? `${JSON.stringify(highestPostHitPercentByPost)}`
+      : `${JSON.stringify(highestPostScoresByPost)}`
+  );
 
-  htmlContent = htmlContent.replace('__AVG_SCORE_ROUND__', `${JSON.stringify(averageRoundScoresByRound)}`);
+  htmlContent = htmlContent.replace(
+    "__CATEGORY__",
+    category.name ? category.name : ""
+  );
 
-  htmlContent = htmlContent.replace('__AVG_SCORE_POST__', condition?`${JSON.stringify(averagePostHitPercentByPost)}`:`${JSON.stringify(averagePostScoresByPost)}`);
+  htmlContent = htmlContent.replace(
+    "__AVG_SCORE_ROUND__",
+    `${JSON.stringify(averageRoundScoresByRound)}`
+  );
 
-  htmlContent = htmlContent.replace('__HIT_PERCENT_FIREARM_ROUND__', `${JSON.stringify(topHitPercentageRoundWithGun)}`);
+  htmlContent = htmlContent.replace(
+    "__AVG_SCORE_POST__",
+    condition
+      ? `${JSON.stringify(averagePostHitPercentByPost)}`
+      : `${JSON.stringify(averagePostScoresByPost)}`
+  );
 
-  htmlContent = htmlContent.replace('__HIGHEST_FIREARM_PERCENT__', `${JSON.stringify(highestScoreByGun)}`);
+  htmlContent = htmlContent.replace(
+    "__HIT_PERCENT_FIREARM_ROUND__",
+    `${JSON.stringify(topHitPercentageRoundWithGun)}`
+  );
 
-  htmlContent = htmlContent.replace('__AVERAGE_FIREARM_PERCENT__', `${JSON.stringify(averageScoreByGun)}`);
+  htmlContent = htmlContent.replace(
+    "__HIGHEST_FIREARM_PERCENT__",
+    `${JSON.stringify(highestScoreByGun)}`
+  );
 
-  htmlContent = htmlContent.replace('__TOP_5__', `${JSON.stringify(top5ScorePercent)}`);
+  htmlContent = htmlContent.replace(
+    "__AVERAGE_FIREARM_PERCENT__",
+    `${JSON.stringify(averageScoreByGun)}`
+  );
 
-  htmlContent = htmlContent.replace('__TOP_EVENT__', `${JSON.stringify(scoresByNoOfRounds)}`);
+  htmlContent = htmlContent.replace(
+    "__TOP_5__",
+    `${JSON.stringify(top5ScorePercent)}`
+  );
 
-  htmlContent = htmlContent.replace('__AVG_EVENT__', `${JSON.stringify(scoresByNoOfRounds)}`);
+  htmlContent = htmlContent.replace(
+    "__TOP_EVENT__",
+    `${JSON.stringify(scoresByNoOfRounds)}`
+  );
 
-  htmlContent = htmlContent.replace('__AVG_HIT_PERCENT__', `${JSON.stringify({score:averageScorePercentage.toFixed(1),isHide:!condition})}`);
+  htmlContent = htmlContent.replace(
+    "__AVG_EVENT__",
+    `${JSON.stringify(scoresByNoOfRounds)}`
+  );
+
+  htmlContent = htmlContent.replace(
+    "__AVG_HIT_PERCENT__",
+    `${JSON.stringify({ score: averageScorePercentage.toFixed(1), isHide: !condition })}`
+  );
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
 
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
   // Optional: Wait for chart to render
-  await page.waitForSelector('canvas');
+  await page.waitForSelector("canvas");
 
   const pdfBuffer = await page.pdf({
     //path: 'test-report.pdf',
-    format: 'A4',
+    format: "A4",
     printBackground: true,
     margin: {
-      top: '0mm',
-      right: '0mm',
-      bottom: '0mm',
-      left: '0mm',
-    }
+      top: "0mm",
+      right: "0mm",
+      bottom: "0mm",
+      left: "0mm",
+    },
   });
 
   await browser.close();
-  console.log('PDF created successfully!');
+  console.log("PDF created successfully!");
   return Buffer.from(pdfBuffer);
 };
 
+module.exports.pdfScoreGenerator = async (data, category = "American Trap") => {
+  let roundName = "Round";
+  let postName = "Post";
+  let isStation = false;
 
-module.exports.pdfScoreGenerator = async (data,category="American Trap")=>{
-    
-    let roundName = "Round";
-    let postName = "Post";
-    let isStation = false;
+  if (CONDITIONAL_CATEGORY.includes(data.category.name)) {
+    postName = "Station";
+  }
 
-    if(CONDITIONAL_CATEGORY.includes(data.category.name)){
-      postName = "Station";
-    }
+  if ("5-Stand" == data.category.name) {
+    postName = "Stand";
+  }
 
-    if("5-Stand" == data.category.name){
-      postName = "Stand";
-    }
+  if ("FITASC" == data.category.name) {
+    roundName = "Parcour";
+    postName = "Peg";
+  }
 
-    if("FITASC" == data.category.name){
-      roundName = "Parcour";
-      postName = "Peg";
-    }
+  if ("Sporting Clays" == data.category.name) {
+    postName = "Station";
+    isStation = true;
+  }
 
-    if("Sporting Clays" == data.category.name){
-      postName = "Station";
-      isStation = true;
-    }
+  let htmlContent = generateFullHtml(data, postName, roundName, isStation);
 
-  let htmlContent = generateFullHtml(data,postName,roundName,isStation);
-  
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
 
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+  await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
   const pdfBuffer = await page.pdf({
     //path: 'test-report.pdf',
-    format: 'A4',
+    format: "A4",
     printBackground: true,
     margin: {
-      top: '0mm',
-      right: '0mm',
-      bottom: '0mm',
-      left: '0mm',
-    }
+      top: "0mm",
+      right: "0mm",
+      bottom: "0mm",
+      left: "0mm",
+    },
   });
 
   await browser.close();
-  console.log('PDF created successfully!');
+  console.log("PDF created successfully!");
   return Buffer.from(pdfBuffer);
 };
 
-function generateFullHtml(data, postName = "Post",roundName = "Round",isStation = false) {
+function generateFullHtml(
+  data,
+  postName = "Post",
+  roundName = "Round",
+  isStation = false
+) {
   const { rounds } = data;
-  let roundStation = rounds[0].posts?rounds[0].posts.length:0;
+  let roundStation = rounds[0].posts ? rounds[0].posts.length : 0;
   function generateRoundsHtml(rounds = []) {
-    return rounds.map(round => {
-      const maxShots = Math.max(...round.posts.map(post => post.shots.length));
+    return rounds
+      .map((round) => {
+        const maxShots = Math.max(
+          ...round.posts.map((post) => post.shots.length)
+        );
 
-      let tableHeader = `
+        let tableHeader = `
         <thead>
           <tr>
             <th>${postName}</th>
-            ${Array.from({ length: maxShots }, (_, i) => `<th>Shot ${String(i + 1).padStart(2, '0')}</th>`).join('')}
+            ${Array.from({ length: maxShots }, (_, i) => `<th>Shot ${String(i + 1).padStart(2, "0")}</th>`).join("")}
             <th>Score</th>
           </tr>
         </thead>
       `;
 
-      let tableBody = '';
-      const columnTotals = Array(maxShots).fill(0);
-      let totalScoreForRound = 0;
+        let tableBody = "";
+        const columnTotals = Array(maxShots).fill(0);
+        let totalScoreForRound = 0;
 
-      round.posts.forEach(post => {
-        const scores = post.shots.map(shot => parseInt(shot.score || 0));
-        const scoreSum = scores.reduce((sum, s) => sum + s, 0);
-        totalScoreForRound += scoreSum;
+        round.posts.forEach((post) => {
+          const scores = post.shots.map((shot) => parseInt(shot.score || 0));
+          const scoreSum = scores.reduce((sum, s) => sum + s, 0);
+          totalScoreForRound += scoreSum;
 
-        tableBody += `<tr><td>${postName} ${String(post.post)}</td>`;
-        for (let i = 0; i < maxShots; i++) {
-          const score = scores[i] !== undefined ? String(scores[i]).padStart(2, '0') : '00';
-          if (scores[i] !== undefined) columnTotals[i] += scores[i];
-          tableBody += `<td>${score}</td>`;
-        }
-        tableBody += `<td>${String(scoreSum).padStart(2, '0')}</td></tr>`;
-      });
+          tableBody += `<tr><td>${postName} ${String(post.post)}</td>`;
+          for (let i = 0; i < maxShots; i++) {
+            const score =
+              scores[i] !== undefined
+                ? String(scores[i]).padStart(2, "0")
+                : "00";
+            if (scores[i] !== undefined) columnTotals[i] += scores[i];
+            tableBody += `<td>${score}</td>`;
+          }
+          tableBody += `<td>${String(scoreSum).padStart(2, "0")}</td></tr>`;
+        });
 
-      let totalRow = `
+        let totalRow = `
         <tr>
           <td><strong>Total</strong></td>
-          ${columnTotals.map(score => `<td><strong>${String(score)}</strong></td>`).join('')}
+          ${columnTotals.map((score) => `<td><strong>${String(score)}</strong></td>`).join("")}
           <td><strong>${totalScoreForRound}</strong></td>
         </tr>
       `;
-      return `
+        return `
         <h2>${isStation ? "" : `${roundName} ${String(round.roundNo)}`}</h2>
         <table>
           ${tableHeader}
@@ -271,33 +357,40 @@ function generateFullHtml(data, postName = "Post",roundName = "Round",isStation 
         </table>
        <h4>${round.note ? `<h3>Note:</h3> ${round.note}` : ""}</h4>
       `;
-    }).join('');
+      })
+      .join("");
   }
-   // on line 272 <h4>${round.note ? `<h3>Note:</h3> ${round.note}` : ""}</h4>
-  let categoryName = data.category.name || 'Category Unknown';
-  let roundLabel = isStation?`${roundStation} Stations`:`${data.noOfRounds || 'Date Unknown'} ${data.noOfRounds > 1 ? `${roundName}`+'s' : `${roundName}`}`;
+  // on line 272 <h4>${round.note ? `<h3>Note:</h3> ${round.note}` : ""}</h4>
+  let categoryName = data.category.name || "Category Unknown";
+  let roundLabel = isStation
+    ? `${roundStation} Stations`
+    : `${data.noOfRounds || "Date Unknown"} ${data.noOfRounds > 1 ? `${roundName}` + "s" : `${roundName}`}`;
   const topSection = `
       <div style="background-color: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
     
     <div>
-      <h1 style="color: #e74c3c; font-size: 24px; margin: 0 0 0px 0;">${data.location || 'Location Unknown'}</h1>
-      <p style="color: #ccc; margin: 0 0 5px;">${categoryName}, ${moment(data.scoreDate).format('MM/DD/YYYY') || 'Date Unknown'}</p>
+      <h1 style="color: #e74c3c; font-size: 24px; margin: 0 0 0px 0;">${data.location || "Location Unknown"}</h1>
+      <p style="color: #ccc; margin: 0 0 5px;">${categoryName}, ${moment(data.scoreDate).format("MM/DD/YYYY") || "Date Unknown"}</p>
       <p style="color: #ccc; margin: 0 0 5px;">${data.handicap || ""} ${roundLabel}</p>
-      <p style="color: #ccc; margin: 0 0 10px;">${data.eventType || ''}</p>
+      <p style="color: #ccc; margin: 0 0 10px;">${data.eventType || ""}</p>
       <p style="color: white; margin: 0;">Total Score: <span style="color: #4caf50;">${data.totalScore}</span> / ${data.totalShots}</p>
     </div>
 
       <div style="margin: 20px 0 0 0; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
         ${
           Array.isArray(data.patches) && data.patches.length
-            ? data.patches.map(patch => `
+            ? data.patches
+                .map(
+                  (patch) => `
                 <img 
                   src="${patch.patchImage}" 
                   alt="Patch" 
                   style="height: 150px; width: 150px; object-fit: cover; border-radius: 4px;" 
                 />
-              `).join('')
-            : ''
+              `
+                )
+                .join("")
+            : ""
         }
       </div>
 
@@ -392,7 +485,9 @@ function generateFullHtml(data, postName = "Post",roundName = "Round",isStation 
 
       ${
         CONDITIONAL_CATEGORY.includes(data.category.name)
-          ? rounds.map((round,index) => generateSkeetTable(round,index)).join('')
+          ? rounds
+              .map((round, index) => generateSkeetTable(round, index))
+              .join("")
           : generateRoundsHtml(rounds)
       }
     </body>
@@ -400,7 +495,7 @@ function generateFullHtml(data, postName = "Post",roundName = "Round",isStation 
   `;
 }
 
-function generateSkeetTable(round,roundIndex) {
+function generateSkeetTable(round, roundIndex) {
   const SHOT_TYPES = ["SINGLE_HIGH", "SINGLE_LOW", "DOUBLE_HIGH", "DOUBLE_LOW"];
   const SHOT_LABELS = {
     SINGLE_HIGH: "SGL H",
@@ -463,7 +558,7 @@ function generateSkeetTable(round,roundIndex) {
       <thead>
         <tr>
           <th>Stations</th>
-          ${SHOT_TYPES.map(type => `<th>${SHOT_LABELS[type]}</th>`).join("")}
+          ${SHOT_TYPES.map((type) => `<th>${SHOT_LABELS[type]}</th>`).join("")}
           <th>Score</th>
         </tr>
       </thead>
@@ -475,4 +570,3 @@ function generateSkeetTable(round,roundIndex) {
         <h4>${round.note ? `<h3>Note:</h3> ${round.note}` : ""}</h4>
   `;
 }
-
