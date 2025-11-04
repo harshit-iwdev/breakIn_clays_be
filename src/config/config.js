@@ -104,6 +104,8 @@ const ANALYSIS_CATEGORY = [
   "International Skeet",
 ];
 
+const PDF_CONDITIONAL_CATEGORIES = ["Sporting Clays", "Super Sporting"];
+
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
@@ -138,6 +140,7 @@ module.exports = {
   STATUS,
   NOTIFICATION_TIME,
   CONDITIONAL_GUN_PART,
+  PDF_CONDITIONAL_CATEGORIES,
   ANALYSIS_CATEGORY,
   RECURRING_EVENT_TYPE,
 };
