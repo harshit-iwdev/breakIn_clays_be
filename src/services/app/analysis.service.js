@@ -489,15 +489,54 @@ const getAnalysis = async (reqBody, user) => {
           },
           { $sort: { post: 1 } },
         ],
+        // highestPostHitPercentByPost: [
+        //   {
+        //     $unwind: "$posts",
+        //   },
+        //   {
+        //     $group: {
+        //       _id: "$posts.post",
+        //       highestScore: { $max: "$posts.postScore" },
+        //       maxShots: { $max: "$posts.postShots" },
+        //     },
+        //   },
+        //   {
+        //     $project: {
+        //       _id: 0,
+        //       post: "$_id",
+        //       highestScore: {
+        //         $multiply: [{ $divide: ["$highestScore", "$maxShots"] }, 100],
+        //       },
+        //     },
+        //   },
+        //   {
+        //     $sort: { post: 1 },
+        //   },
+        // ],
         highestPostHitPercentByPost: [
           {
             $unwind: "$posts",
           },
           {
+            $addFields: {
+              postHitPercentage: {
+                $cond: [
+                  { $eq: ["$posts.postShots", 0] },
+                  0,
+                  {
+                    $multiply: [
+                      { $divide: ["$posts.postScore", "$posts.postShots"] },
+                      100,
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          {
             $group: {
               _id: "$posts.post",
-              highestScore: { $max: "$posts.postScore" },
-              maxShots: { $max: "$posts.postShots" },
+              highestScore: { $max: "$postHitPercentage" },
             },
           },
           {
@@ -505,7 +544,7 @@ const getAnalysis = async (reqBody, user) => {
               _id: 0,
               post: "$_id",
               highestScore: {
-                $multiply: [{ $divide: ["$highestScore", "$maxShots"] }, 100],
+                $round: ["$highestScore", 2],
               },
             },
           },
@@ -513,6 +552,7 @@ const getAnalysis = async (reqBody, user) => {
             $sort: { post: 1 },
           },
         ],
+
         topHitPercentageRoundWithGun: [
           { $unwind: "$roundDetails" },
           {
