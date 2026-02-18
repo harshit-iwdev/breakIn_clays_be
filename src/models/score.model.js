@@ -15,6 +15,10 @@ const scoreSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+    weather: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     scoreDate: {
       type: Date,
       required: true,

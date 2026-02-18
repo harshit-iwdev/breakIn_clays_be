@@ -489,30 +489,6 @@ const getAnalysis = async (reqBody, user) => {
           },
           { $sort: { post: 1 } },
         ],
-        // highestPostHitPercentByPost: [
-        //   {
-        //     $unwind: "$posts",
-        //   },
-        //   {
-        //     $group: {
-        //       _id: "$posts.post",
-        //       highestScore: { $max: "$posts.postScore" },
-        //       maxShots: { $max: "$posts.postShots" },
-        //     },
-        //   },
-        //   {
-        //     $project: {
-        //       _id: 0,
-        //       post: "$_id",
-        //       highestScore: {
-        //         $multiply: [{ $divide: ["$highestScore", "$maxShots"] }, 100],
-        //       },
-        //     },
-        //   },
-        //   {
-        //     $sort: { post: 1 },
-        //   },
-        // ],
         highestPostHitPercentByPost: [
           {
             $unwind: "$posts",
