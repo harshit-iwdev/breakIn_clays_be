@@ -115,6 +115,7 @@ const createScore = async (reqBody, userId) => {
     scoreImage,
     gunId,
     noOfRounds,
+    weather,
     handicap,
     rounds,
     eventType,
@@ -123,7 +124,6 @@ const createScore = async (reqBody, userId) => {
     eventId,
     isDraft,
   } = reqBody;
-  console.log(JSON.stringify(reqBody));
 
   if (eventId) {
     const eventDetails = await eventService.getEventById(eventId);
@@ -163,6 +163,7 @@ const createScore = async (reqBody, userId) => {
           noOfRounds,
           eventType,
           handicap,
+          weather,
           userId,
           totalScore,
           totalShots,
@@ -910,6 +911,7 @@ const getScore = async (scoreId, userId) => {
         location: 1,
         longitude: 1,
         latitude: 1,
+        weather: 1,
         scoreDate: 1,
         userId: 1,
         gunId: 1,
@@ -1195,6 +1197,7 @@ const listScore = async (reqBody, userId) => {
         location: 1,
         longitude: 1,
         latitude: 1,
+        weather: 1,
         scoreDate: {
           $dateTrunc: {
             date: "$scoreDate",
