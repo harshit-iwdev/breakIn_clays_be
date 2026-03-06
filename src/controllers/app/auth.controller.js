@@ -79,10 +79,8 @@ const deviceRegister = catchAsync(async (req, res) => {
       headers.user_id = user._id;
       objUserDevice = await userDeviceService.createDevice(headers);
     }else if(objUserDevice){
-      console.log("🚀 ~ deviceRegister ~ objUserDevice:", objUserDevice)
       headers.user_id = user._id;
       objUserDevice.deviceToken = headers["device-token"];
-      console.log("🚀 ~ deviceRegister ~ objUserDevice:", objUserDevice)
       await objUserDevice.save();
     }
     
