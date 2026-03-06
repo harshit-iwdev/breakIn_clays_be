@@ -86,6 +86,7 @@ const edit = {
     longitude: Joi.string()
       .pattern(/^-?\d+(\.\d+)?$/)
       .required(),
+    weather: Joi.object().unknown(true).required(),
     categoryId: Joi.string().required().custom(objectId),
     eventType: Joi.string().valid(...SCORE_EVENT_TYPE),
     noOfRounds: Joi.number().integer().min(1).required(),

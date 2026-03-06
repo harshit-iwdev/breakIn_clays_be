@@ -291,6 +291,7 @@ const editScore = async (reqBody, userId) => {
     location,
     latitude,
     longitude,
+    weather,
     scoreDate,
     categoryId,
     scoreImage,
@@ -304,6 +305,8 @@ const editScore = async (reqBody, userId) => {
     eventId,
     isDraft,
   } = reqBody;
+
+  console.log("Weather: ", weather);
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -495,6 +498,7 @@ const editScore = async (reqBody, userId) => {
       location,
       latitude,
       longitude,
+      weather,
       scoreDate,
       categoryId,
       gunId,
