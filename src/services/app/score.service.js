@@ -305,9 +305,7 @@ const editScore = async (reqBody, userId) => {
     eventId,
     isDraft,
   } = reqBody;
-
-  console.log("Weather: ", weather);
-
+  
   const session = await mongoose.startSession();
   session.startTransaction();
 
