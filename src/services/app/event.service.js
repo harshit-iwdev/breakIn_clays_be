@@ -54,6 +54,7 @@ const createEvent = async (eventBody, user) => {
       categoryId,
       latitude,
       longitude,
+      weather,
       isAutoDelete = false,
       recurringType,
     } = eventBody;
@@ -85,6 +86,7 @@ const createEvent = async (eventBody, user) => {
           location,
           latitude,
           longitude,
+          weather,
           categoryId,
           userId,
           isAutoDelete,
@@ -209,6 +211,7 @@ const editEvent = async (eventBody, user) => {
       categoryId,
       latitude,
       longitude,
+      weather,
       alertType,
     } = eventBody;
     const userId = user._id;
@@ -241,6 +244,7 @@ const editEvent = async (eventBody, user) => {
     if (latitude) event.latitude = latitude;
     if (longitude) event.longitude = longitude;
     if (location) event.location = location;
+    if (weather) event.weather = weather;
 
     if (alertType) {
       let userCalendar = await UserCalendar.findOne({
@@ -500,6 +504,7 @@ const listEvents = async (reqBody, userId) => {
         location: 1,
         longitude: 1,
         latitude: 1,
+        weather: 1,
         isAdmin: 1,
         isNotify: 1,
         alertType: 1,

@@ -14,6 +14,7 @@ const create = {
     longitude: Joi.string()
       .pattern(/^-?\d+(\.\d+)?$/)
       .required(),
+    weather: Joi.object().unknown(true).optional(),
     startDate: Joi.string().required(),
     endDate: Joi.string().required(),
     location: Joi.string().required(),
@@ -53,6 +54,7 @@ const edit = {
     longitude: Joi.string()
       .pattern(/^-?\d+(\.\d+)?$/)
       .required(),
+    weather: Joi.object().unknown(true).optional(),
     startDate: Joi.string().required(),
     endDate: Joi.string().required(),
     location: Joi.string().required(),

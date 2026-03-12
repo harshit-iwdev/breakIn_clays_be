@@ -101,3 +101,6 @@ const scoreSchema = mongoose.Schema(
 const Score = mongoose.model("Score", scoreSchema);
 
 module.exports = Score;
+
+
+

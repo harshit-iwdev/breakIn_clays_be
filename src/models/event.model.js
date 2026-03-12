@@ -39,6 +39,10 @@ const eventSchema = mongoose.Schema(
       type: String,
       required: false,
     },
+     weather: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
     isAdmin: {
       type: Boolean,
       default: false,
