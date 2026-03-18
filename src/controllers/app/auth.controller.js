@@ -57,7 +57,7 @@ const verifyEmail = catchAsync(async (req, res) => {
 });
 
 const resendEmail = catchAsync(async (req, res) => {
-  await authService.resendWelcomeEmail(req.body.email);
+  await authService.resendWelcomeEmail(req.body.email.toLowerCase());
   res.sendJSONResponse(httpStatus.OK, true, "We have sent you an email with an One Time Passcode.", {});
 });
 
