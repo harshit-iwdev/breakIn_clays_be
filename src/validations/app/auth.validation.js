@@ -3,7 +3,7 @@ const { password } = require('./custom.validation');
 
 const register = {
   body: Joi.object().keys({
-    email: Joi.string().required().email(),
+    email: Joi.string().required().email().lowercase(),
     password: Joi.alternatives().conditional('socialToken', {
       is: Joi.exist().not(null),
       then: Joi.forbidden(),
@@ -23,7 +23,7 @@ const register = {
 
 const login = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().lowercase(),
     password: Joi.string().required(),
   }),
 };
@@ -48,7 +48,7 @@ const refreshTokens = {
 
 const forgotPassword = {
   body: Joi.object().keys({
-    email: Joi.string().email().required(),
+    email: Joi.string().email().required().lowercase(),
   }),
 };
 
@@ -61,14 +61,14 @@ const resetPassword = {
 
 const verifyEmail = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().lowercase(),
     otp: Joi.number().required(),
   }),
 };
 
 const deleteUserEmail = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().lowercase(),
     otp: Joi.number().required(),
   }),
 };
