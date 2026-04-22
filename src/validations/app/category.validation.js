@@ -7,6 +7,7 @@ const list = {
     limit: Joi.number(),
     page: Joi.number(),
     isHome: Joi.boolean(),
+    favoritesFirst: Joi.boolean(),
   }),
 };
 
@@ -27,8 +28,15 @@ const get = {
   }),
 };
 
+const favorite = {
+  params: Joi.object().keys({
+    categoryId: Joi.string().required().custom(objectId),
+  }),
+};
+
 module.exports = {
     list,
     get,
     listSponsor,
+    favorite,
 } 

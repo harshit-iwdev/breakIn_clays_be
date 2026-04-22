@@ -73,6 +73,7 @@ const add = {
     gunId: Joi.string().custom(objectId).allow("", null),
     eventId: Joi.string().custom(objectId),
     isDraft: Joi.boolean().required(),
+    course: Joi.string().allow(""),
   }),
 };
 
@@ -133,6 +134,7 @@ const edit = {
     gunId: Joi.string().custom(objectId).allow("", null),
     eventId: Joi.string().custom(objectId),
     isDraft: Joi.boolean().required(),
+    course: Joi.string().allow(""),
   }),
 };
 
@@ -168,6 +170,7 @@ const list = {
   body: Joi.object().keys({
     categoryId: Joi.string().required().custom(objectId),
     search: Joi.string().allow(""),
+    sortedBy: Joi.string().valid("ascending", "descending").default("ascending"),
     limit: Joi.number(),
     page: Joi.number(),
     eventId: Joi.string().custom(objectId),

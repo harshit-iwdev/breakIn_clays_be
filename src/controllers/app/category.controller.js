@@ -24,6 +24,26 @@ const getCategory = catchAsync(async (req, res) => {
   );
 });
 
+const addFavoriteCategory = catchAsync(async (req, res) => {
+  const favoriteCategoryIds = await categoryService.addFavoriteCategory(
+    req.params.categoryId,
+    req.user._id
+  );
+  res.sendJSONResponse(httpStatus.OK, true, "Category added to favorites.", {
+    favoriteCategoryIds,
+  });
+});
+
+const removeFavoriteCategory = catchAsync(async (req, res) => {
+  const favoriteCategoryIds = await categoryService.removeFavoriteCategory(
+    req.params.categoryId,
+    req.user._id
+  );
+  res.sendJSONResponse(httpStatus.OK, true, "Category removed from favorites.", {
+    favoriteCategoryIds,
+  });
+});
+
 const listSponsor = catchAsync(async (req, res) => {
   const sponsors = await categoryService.listSponsor(req.body);
   res.sendJSONResponse(
@@ -38,4 +58,6 @@ module.exports = {
   listCategory,
   getCategory,
   listSponsor,
+  addFavoriteCategory,
+  removeFavoriteCategory,
 };

@@ -9,7 +9,7 @@ const envVarsSchema = Joi.object()
     NODE_ENV: Joi.string()
       .valid("production", "development", "test")
       .required(),
-    PORT: Joi.number().default(3000),
+    PORT: Joi.number().default(3001),
     MONGODB_URL: Joi.string().required().description("Mongo DB url"),
     // MONGODB_URL_LOCAL: Joi.string().required().description("Mongo DB url"),
     JWT_SECRET: Joi.string().required().description("JWT secret key"),
@@ -61,6 +61,7 @@ const SCORE_EVENT_TYPE = [
   "COMPETITION",
   "VIRTUAL",
   "CHARITY",
+  "LEAGUE"
 ];
 
 const RECURRING_EVENT_TYPE = [
