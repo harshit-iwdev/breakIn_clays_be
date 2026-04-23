@@ -1,5 +1,5 @@
 const { pipeline } = require("nodemailer/lib/xoauth2");
-const { Category, Sponsor } = require("../../models");
+const { Category, Sponsor, User } = require("../../models");
 const ApiError = require("../../utils/ApiError");
 const httpStatus = require("http-status");
 const mongoose = require("mongoose");
@@ -14,7 +14,9 @@ const getCategoryById = async (id) => {
 
 ///previous method
 const listCategory = async (reqBody, userId) => {
-  const { page = 1, limit = 10, isHome = true } = reqBody;
+  const { page = 1, limit = 10, isHome = true, favoritesFirst = false } = reqBody;
+  const user = await User.findById(userId).select("favoriteCategoryIds");
+  const favoriteCategoryIds = user?.favoriteCategoryIds || [];
 
   const filter = {};
 
@@ -103,6 +105,7 @@ const listCategory = async (reqBody, userId) => {
     {
       $addFields: {
         totalScore: { $size: { $ifNull: ["$totalScore", []] } },
+        isFavorite: { $in: ["$_id", favoriteCategoryIds] },
         scoreDate: {
           $cond: {
             if: { $gt: [{ $size: { $ifNull: ["$totalScore", []] } }, 0] },
@@ -115,12 +118,13 @@ const listCategory = async (reqBody, userId) => {
     {
       $project: {
         ...projectFields,
+        isFavorite: 1,
         ...(isHome
           ? {}
           : { totalScore: 1, recordDate: "$analysisRecord.recordDate" }),
       },
     },
-    { $sort: { createdAt: 1 } },
+    { $sort: favoritesFirst ? { isFavorite: -1, createdAt: 1 } : { createdAt: 1 } },
     {
       $facet: {
         totalRecords: [{ $count: "total" }],
@@ -230,8 +234,40 @@ const listSponsor = async (reqBody) => {
   return data;
 };
 
+const addFavoriteCategory = async (categoryId, userId) => {
+  await getCategoryById(categoryId);
+
+  const user = await User.findOneAndUpdate(
+    { _id: userId, isDeleted: false },
+    { $addToSet: { favoriteCategoryIds: categoryId } },
+    { new: true }
+  ).select("favoriteCategoryIds");
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  return user.favoriteCategoryIds;
+};
+
+const removeFavoriteCategory = async (categoryId, userId) => {
+  const user = await User.findOneAndUpdate(
+    { _id: userId, isDeleted: false },
+    { $pull: { favoriteCategoryIds: categoryId } },
+    { new: true }
+  ).select("favoriteCategoryIds");
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  return user.favoriteCategoryIds;
+};
+
 module.exports = {
   listCategory,
   getCategoryById,
   listSponsor,
+  addFavoriteCategory,
+  removeFavoriteCategory,
 };

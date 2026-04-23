@@ -123,6 +123,7 @@ const createScore = async (reqBody, userId) => {
     totalShots,
     eventId,
     isDraft,
+    course
   } = reqBody;
 
   if (eventId) {
@@ -169,6 +170,7 @@ const createScore = async (reqBody, userId) => {
           totalShots,
           eventId,
           isDraft,
+          course
         },
       ],
       { session }
@@ -304,6 +306,7 @@ const editScore = async (reqBody, userId) => {
     totalShots,
     eventId,
     isDraft,
+    course
   } = reqBody;
   
   const session = await mongoose.startSession();
@@ -508,6 +511,7 @@ const editScore = async (reqBody, userId) => {
       eventId,
       roundIds: updatedRoundIds,
       isDraft,
+      course,
     });
     if (scoreImage) {
       // Extract just the image filename from the full path
@@ -672,117 +676,6 @@ const softDeleteScore = async (req, userId) => {
 };
 
 const getScore = async (scoreId, userId) => {
-  // let pipeline = [
-  //   {
-  //     $match:{
-  //         _id:new mongoose.Types.ObjectId(scoreId),
-  //         userId:new mongoose.Types.ObjectId(userId),
-  //         isDeleted: false,
-  //     }
-  //   },
-  //   {
-  //       $lookup: {
-  //           from: "categories",
-  //           localField: "categoryId",
-  //           foreignField: "_id",
-  //           as: "category"
-  //       }
-  //   },
-  //   {
-  //     $unwind:{
-  //           path:"$category"
-  //     }
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "userpatches",
-  //       localField: "_id",
-  //       foreignField: "scoreId",
-  //       as: "userPatches"
-  //     }
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "patches",
-  //       let: { userPatches: "$userPatches" },
-  //       pipeline: [
-  //         {
-  //           $match: {
-  //             $expr: {
-  //               $in: [ "$_id", { $map: { input: "$$userPatches", as: "up", in: "$$up.patchId" } } ]
-  //             }
-  //           }
-  //         }
-  //       ],
-  //       as: "patches"
-  //     }
-  //   },
-  //   {
-  //       $lookup: {
-  //           from: "scorerounds",
-  //           localField: "roundIds",
-  //           foreignField: "_id",
-  //           as: "rounds",
-  //           pipeline:[
-  //             {
-  //               $lookup: {
-  //                   from: "scoreposts",
-  //                   localField: "postIds",
-  //                   foreignField: "_id",
-  //                   as: "posts",
-  //                   pipeline:[
-  //                     {
-  //                       $addFields: {
-  //                         totalShots: { $size: "$shots" },
-  //                         totalScore: { $sum: "$shots.score" }
-  //                       }
-  //                     },
-  //                     {
-  //                       $project:{
-  //                         "_id": 1,
-  //                         "post": 1,
-  //                         "postName": 1,
-  //                         "shots":1,
-  //                         "totalScore": 1,
-  //                         "totalShots":1
-  //                       }
-  //                     }
-  //                   ]
-  //               }
-  //           },
-  //           {
-  //             $project:{
-  //               "_id": 1,
-  //               "roundNo": 1,
-  //               "posts":1,
-  //               "roundScore":1,
-  //               "roundShots":1,
-  //               "note":1,
-  //             }
-  //           }
-  //         ]
-  //       }
-  //   },
-  //   {
-  //     $project:{
-  //       "_id": 1,
-  //       "location": 1,
-  //       "scoreDate": 1,
-  //       "userId": 1,
-  //       "category": 1,
-  //       "eventType": 1,
-  //       "noOfRounds": 1,
-  //       "handicap": 1,
-  //       "scoreImage": 1,
-  //       "scoreImageName": 1,
-  //       "rounds":1,
-  //       "posts":1,
-  //       "totalScore":1,
-  //       "totalShots":1,
-  //       "patches":1
-  //     }
-  //   }
-  // ];
 
   let pipeline = [
     {
@@ -928,6 +821,7 @@ const getScore = async (scoreId, userId) => {
         totalScore: 1,
         totalShots: 1,
         patches: 1,
+        course: 1,
       },
     },
   ];
@@ -1108,7 +1002,10 @@ const listScore = async (reqBody, userId) => {
     endDate,
     eventType,
     noDraft,
+    sortedBy
   } = reqBody;
+
+  const sortOrder = sortedBy === "ascending" ? 1 : -1;
 
   let filter = {
     userId: new mongoose.Types.ObjectId(userId),
@@ -1221,11 +1118,12 @@ const listScore = async (reqBody, userId) => {
         isPatch: 1,
         isDraft: 1,
         eventId: 1,
+        course: 1,
       },
     },
     {
       $sort: {
-        scoreDate: 1, // Sort by scoreDate in descending order (future dates first)
+        scoreDate: sortOrder, // Sort by scoreDate in descending order (future dates first)
         updatedAt: -1, // Then by createdAt for scores with same date (latest created first)
       },
     },

@@ -89,6 +89,11 @@ const scoreSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    course: {
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   {
     timestamps: true,

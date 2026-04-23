@@ -90,6 +90,12 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    favoriteCategoryIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+      },
+    ],
   },
   {
     timestamps: true,
