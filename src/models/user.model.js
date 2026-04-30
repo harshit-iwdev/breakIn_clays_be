@@ -92,8 +92,16 @@ const userSchema = mongoose.Schema(
     },
     favoriteCategoryIds: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
+        _id: false,
+        categoryId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Category',
+          required: true,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
   },

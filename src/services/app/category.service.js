@@ -3,6 +3,71 @@ const { Category, Sponsor, User } = require("../../models");
 const ApiError = require("../../utils/ApiError");
 const httpStatus = require("http-status");
 const mongoose = require("mongoose");
+const MAX_FAVORITE_CATEGORIES = 3;
+
+const normalizeFavoriteCategoryIds = (favoriteCategoryIds = []) =>
+  favoriteCategoryIds
+    .map((favorite) => {
+      if (!favorite) {
+        return null;
+      }
+
+      if (
+        favorite.categoryId &&
+        mongoose.Types.ObjectId.isValid(favorite.categoryId)
+      ) {
+        return favorite.categoryId.toString();
+      }
+
+      if (mongoose.Types.ObjectId.isValid(favorite)) {
+        return favorite.toString();
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+const normalizeFavoriteCategoryEntries = (favoriteCategoryIds = []) =>
+  favoriteCategoryIds
+    .map((favorite) => {
+      if (!favorite) {
+        return null;
+      }
+
+      if (
+        favorite.categoryId &&
+        mongoose.Types.ObjectId.isValid(favorite.categoryId)
+      ) {
+        return {
+          categoryId: favorite.categoryId.toString(),
+          addedAt: favorite.addedAt ? new Date(favorite.addedAt) : new Date(0),
+        };
+      }
+
+      if (mongoose.Types.ObjectId.isValid(favorite)) {
+        return {
+          categoryId: favorite.toString(),
+          addedAt: new Date(0),
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean)
+    .sort((first, second) => second.addedAt - first.addedAt);
+
+const buildFavoriteCategoryPayload = (favoriteCategoryIds = [], categoryId) => {
+  const now = new Date();
+  const normalizedFavorites = normalizeFavoriteCategoryEntries(favoriteCategoryIds)
+    .filter((favorite) => favorite.categoryId !== categoryId);
+
+  normalizedFavorites.unshift({ categoryId, addedAt: now });
+
+  return normalizedFavorites.slice(0, MAX_FAVORITE_CATEGORIES).map((favorite) => ({
+    categoryId: new mongoose.Types.ObjectId(favorite.categoryId),
+    addedAt: favorite.addedAt,
+  }));
+};
 
 const getCategoryById = async (id) => {
   const category = await Category.findOne({ _id: id, isDeleted: false });
@@ -15,8 +80,11 @@ const getCategoryById = async (id) => {
 ///previous method
 const listCategory = async (reqBody, userId) => {
   const { page = 1, limit = 10, isHome = true, favoritesFirst = false } = reqBody;
-  const user = await User.findById(userId).select("favoriteCategoryIds");
-  const favoriteCategoryIds = user?.favoriteCategoryIds || [];
+  const user = await User.findById(userId).select("favoriteCategoryIds").lean();
+  const favoriteEntries = normalizeFavoriteCategoryEntries(user?.favoriteCategoryIds);
+  const favoriteCategoryIds = favoriteEntries.map(
+    (favorite) => new mongoose.Types.ObjectId(favorite.categoryId)
+  );
 
   const filter = {};
 
@@ -106,6 +174,25 @@ const listCategory = async (reqBody, userId) => {
       $addFields: {
         totalScore: { $size: { $ifNull: ["$totalScore", []] } },
         isFavorite: { $in: ["$_id", favoriteCategoryIds] },
+        favoriteAddedAt: {
+          $let: {
+            vars: {
+              favoriteMatch: {
+                $arrayElemAt: [
+                  {
+                    $filter: {
+                      input: user?.favoriteCategoryIds || [],
+                      as: "favorite",
+                      cond: { $eq: ["$$favorite.categoryId", "$_id"] },
+                    },
+                  },
+                  0,
+                ],
+              },
+            },
+            in: "$$favoriteMatch.addedAt",
+          },
+        },
         scoreDate: {
           $cond: {
             if: { $gt: [{ $size: { $ifNull: ["$totalScore", []] } }, 0] },
@@ -116,6 +203,11 @@ const listCategory = async (reqBody, userId) => {
       },
     },
     {
+      $sort: favoritesFirst
+        ? { isFavorite: -1, favoriteAddedAt: -1, createdAt: 1 }
+        : { createdAt: 1 },
+    },
+    {
       $project: {
         ...projectFields,
         isFavorite: 1,
@@ -124,7 +216,6 @@ const listCategory = async (reqBody, userId) => {
           : { totalScore: 1, recordDate: "$analysisRecord.recordDate" }),
       },
     },
-    { $sort: favoritesFirst ? { isFavorite: -1, createdAt: 1 } : { createdAt: 1 } },
     {
       $facet: {
         totalRecords: [{ $count: "total" }],
@@ -237,9 +328,22 @@ const listSponsor = async (reqBody) => {
 const addFavoriteCategory = async (categoryId, userId) => {
   await getCategoryById(categoryId);
 
+  const existingUser = await User.findOne({ _id: userId, isDeleted: false })
+    .select("favoriteCategoryIds")
+    .lean();
+
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  const favoriteCategoryPayload = buildFavoriteCategoryPayload(
+    existingUser.favoriteCategoryIds,
+    categoryId
+  );
+
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
-    { $addToSet: { favoriteCategoryIds: categoryId } },
+    { $set: { favoriteCategoryIds: favoriteCategoryPayload } },
     { new: true }
   ).select("favoriteCategoryIds");
 
@@ -247,13 +351,30 @@ const addFavoriteCategory = async (categoryId, userId) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
   }
 
-  return user.favoriteCategoryIds;
+  return normalizeFavoriteCategoryIds(user.favoriteCategoryIds);
 };
 
 const removeFavoriteCategory = async (categoryId, userId) => {
+  const existingUser = await User.findOne({ _id: userId, isDeleted: false })
+    .select("favoriteCategoryIds")
+    .lean();
+
+  if (!existingUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+
+  const favoriteCategoryPayload = normalizeFavoriteCategoryEntries(
+    existingUser.favoriteCategoryIds
+  )
+    .filter((favorite) => favorite.categoryId !== categoryId)
+    .map((favorite) => ({
+      categoryId: new mongoose.Types.ObjectId(favorite.categoryId),
+      addedAt: favorite.addedAt,
+    }));
+
   const user = await User.findOneAndUpdate(
     { _id: userId, isDeleted: false },
-    { $pull: { favoriteCategoryIds: categoryId } },
+    { $set: { favoriteCategoryIds: favoriteCategoryPayload } },
     { new: true }
   ).select("favoriteCategoryIds");
 
@@ -261,7 +382,7 @@ const removeFavoriteCategory = async (categoryId, userId) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
   }
 
-  return user.favoriteCategoryIds;
+  return normalizeFavoriteCategoryIds(user.favoriteCategoryIds);
 };
 
 module.exports = {
