@@ -12,3 +12,4 @@ module.exports.patchValidation = require('./patch.validation');
 module.exports.adminNotificationValidation = require('./adminNotification.validation');
 module.exports.videoValidation = require('./video.validation');
 module.exports.gunRequestValidation = require('./gunRequest.validation');
+module.exports.uploadValidation = require('./upload.validation');

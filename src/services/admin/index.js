@@ -14,3 +14,4 @@ module.exports.adminNotificationService = require("./adminNotification.service")
 module.exports.dashboardService = require("./dashboard.service");
 module.exports.videoService = require("./video.service");
 module.exports.gunRequestService = require("./gunRequest.service");
+module.exports.uploadService = require("./upload.service");

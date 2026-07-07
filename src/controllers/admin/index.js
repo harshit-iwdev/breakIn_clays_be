@@ -13,3 +13,4 @@ module.exports.adminNotificationController = require('./adminNotification.contro
 module.exports.dashboardController = require('./dashboard.controller');
 module.exports.videoController = require('./video.controller');
 module.exports.gunRequestController = require('./gunRequest.controller');
+module.exports.uploadController = require('./upload.controller');
