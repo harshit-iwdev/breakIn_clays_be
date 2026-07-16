@@ -15,6 +15,7 @@ const adminNotificationRoute = require('./adminNotification.route');
 const videoRoute = require('./video.route');
 const gunRequestRoute = require('./gunRequest.route');
 const userRoute = require('./user.route');
+const uploadRoute = require('./upload.route');
 
 const router = express.Router();
 
@@ -78,6 +79,10 @@ const defaultRoutes = [
   {
     path: '/gun-request',
     route: gunRequestRoute,
+  },
+  {
+    path: '/upload',
+    route: uploadRoute,
   },
 ];
 

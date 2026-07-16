@@ -8,6 +8,7 @@ const gunSafeRoute = require('./gunSafe.route');
 const analysisRoute = require('./analysis.route');
 const queryRoute = require('./query.route');
 const sideMenuRoute = require('./sideMenu.route');
+const uploadRoute = require('./upload.route');
 
 const router = express.Router();
 
@@ -47,6 +48,10 @@ const defaultRoutes = [
   {
     path: '/menu',
     route: sideMenuRoute,
+  },
+  {
+    path: '/upload',
+    route: uploadRoute,
   },
 ];
 

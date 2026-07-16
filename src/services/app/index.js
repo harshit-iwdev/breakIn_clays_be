@@ -11,3 +11,4 @@ module.exports.videoService = require('./video.service');
 module.exports.sideMenuService = require('./sideMenu.service');
 module.exports.userDeviceService = require('./userDevice.service');
 module.exports.appVersionService = require('./appVersion.service');
+module.exports.uploadService = require('./upload.service');

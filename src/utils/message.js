@@ -113,7 +113,10 @@ const sucessfull_message = {
     GUN_REQUEST_UPDATED: 'Gun request updated successfully',
     GUN_REQUEST_DELETED: 'Gun request deleted successfully',
     GUN_REQUEST_FOUND: 'Gun request found',
-  
+
+    //UPLOAD
+    UPLOAD_URL_GENERATED: 'Upload URL generated successfully',
+
   };
   
   const error_message = {

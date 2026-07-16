@@ -1,4 +1,6 @@
 require("dotenv").config();
+const crypto = require("crypto");
+const path = require("path");
 
 const {
   S3Client,
@@ -130,3 +132,29 @@ module.exports.eventFolderPath = process.env.AWS_BUCKET_EVENT_FOLDER;
 module.exports.sponsorFolderPath = process.env.AWS_BUCKET_SPONSOR_FOLDER;
 module.exports.patchFolderPath = process.env.AWS_BUCKET_PATCH_FOLDER;
 module.exports.scoreFolderPath = process.env.AWS_BUCKET_SCORE_FOLDER;
+
+/**
+ * Generates a short-lived presigned URL the client can use to PUT a file directly to S3,
+ * into the temp folder. The returned fileName must be sent back to the relevant
+ * create/update endpoint, which moves the file out of temp via createUrl().
+ * @param {string} fileName - original file name (used only to keep the extension)
+ * @param {string} [contentType] - MIME type of the file being uploaded
+ * @returns {Promise<{uploadUrl: string, fileName: string}>}
+ */
+module.exports.getUploadSignedUrl = async (fileName, contentType) => {
+  const myBucket = process.env.AWS_BUCKET_NAME;
+  const ext = path.extname(fileName);
+  const uniqueFileName = `${Date.now()}_${crypto.randomBytes(8).toString("hex")}${ext}`;
+  const key = `${module.exports.tempFolderPath}/${uniqueFileName}`;
+
+  const command = new PutObjectCommand({
+    Bucket: myBucket,
+    Key: key,
+    ContentType: contentType,
+    ACL: "public-read",
+  });
+
+  const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
+
+  return { uploadUrl, fileName: uniqueFileName };
+};

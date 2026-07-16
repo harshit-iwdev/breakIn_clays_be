@@ -8,3 +8,4 @@ module.exports.analysisController = require('./analysis.controller');
 module.exports.queryController = require('./query.controller');
 module.exports.videoController = require('./video.controller');
 module.exports.sideMenuController = require('./sideMenu.controller');
+module.exports.uploadController = require('./upload.controller');
