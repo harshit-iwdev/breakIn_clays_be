@@ -38,7 +38,15 @@ const changePassword = async (userId,reqBody) => {
 
   const user = await getUserById(userId);
 
-  if (!user || !(await user.isPasswordMatch(oldPassword))) {
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!user.password) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Set a password for login.');
+  }
+
+  if (!(await user.isPasswordMatch(oldPassword))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Password does not matched.');
   }
 

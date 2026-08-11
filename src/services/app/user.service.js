@@ -244,7 +244,21 @@ const changePassword = async (userId, reqBody) => {
 
   const user = await getUserById(userId);
 
-  if (!user || !(await user.isPasswordMatch(oldPassword))) {
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      message.error_message.USER_NOT_FOUND
+    );
+  }
+
+  if (!user.password) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      message.error_message.SET_PASSWORD
+    );
+  }
+
+  if (!(await user.isPasswordMatch(oldPassword))) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Password does not matched.");
   }
 
@@ -576,6 +590,19 @@ const notifyUpdate = async (userId) => {
   return user;
 };
 
+const updateBiometric = async (userId, biometric) => {
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      message.error_message.USER_NOT_FOUND
+    );
+  }
+  user.biometric = biometric;
+  await user.save();
+  return user;
+};
+
 module.exports = {
   createUser,
   getUserById,
@@ -597,4 +624,5 @@ module.exports = {
   metricUpdate,
   premiumUpdate,
   notifyUpdate,
+  updateBiometric,
 };

@@ -69,6 +69,13 @@ router.patch(
 
 router.get("/push-notify", auth(), userController.notifyUpdate);
 
+router.patch(
+  "/update/biometric",
+  auth(),
+  validate(userValidation.updateBiometric),
+  userController.updateBiometric
+);
+
 module.exports = router;
 
 /**

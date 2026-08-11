@@ -89,6 +89,12 @@ const premiumUser = {
   }),
 };
 
+const updateBiometric = {
+  body: Joi.object().keys({
+    biometric: Joi.boolean().required(),
+  }),
+};
+
 module.exports = {
   createUser,
   getUsers,
@@ -102,4 +108,5 @@ module.exports = {
   readNotification,
   deleteNotification,
   premiumUser,
+  updateBiometric,
 };
