@@ -204,7 +204,7 @@ const listCategory = async (reqBody, userId) => {
     },
     {
       $sort: favoritesFirst
-        ? { isFavorite: -1, favoriteAddedAt: -1, createdAt: 1 }
+        ? { isFavorite: -1, favoriteAddedAt: 1, createdAt: 1 }
         : { createdAt: 1 },
     },
     {
