@@ -90,6 +90,10 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    biometric: {
+      type: Boolean,
+      default: false,
+    },
     favoriteCategoryIds: [
       {
         _id: false,
@@ -128,6 +132,9 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
  */
 userSchema.methods.isPasswordMatch = async function (password) {
   const user = this;
+  if (!user.password) {
+    return false;
+  }
   return bcrypt.compare(password, user.password);
 };
 

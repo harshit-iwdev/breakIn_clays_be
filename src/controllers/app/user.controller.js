@@ -87,6 +87,11 @@ const notifyUpdate = catchAsync(async (req, res) => {
     res.sendJSONResponse(httpStatus.OK, true, message.sucessfull_message.USER_UPDATED, {result:{isNotify:user.isNotify}});
 });
 
+const updateBiometric = catchAsync(async (req, res) => {
+    const user = await userService.updateBiometric(req.user._id,req.body.biometric);
+    res.sendJSONResponse(httpStatus.OK, true, message.sucessfull_message.USER_UPDATED, {result:{biometric:user.biometric}});
+});
+
 module.exports = {
     saveProfileImage,
     getUserProfile,
@@ -103,4 +108,5 @@ module.exports = {
     metricUpdate,
     premiumUpdate,
     notifyUpdate,
+    updateBiometric,
 }
